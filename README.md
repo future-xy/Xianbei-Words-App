@@ -4,6 +4,7 @@ This a the server end of the final database project
 # API Command
 ## Page1
 ### FrontPage
+
   Get
   
   userInfo{
@@ -25,6 +26,7 @@ This a the server end of the final database project
   None 
 
 ### TestPage
+
   Get
   
   todayTestWordList{
