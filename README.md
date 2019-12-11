@@ -3,13 +3,13 @@ This a the server end of the final database project
 
 ###### Re:
 
-I can understand what did you mean below. Could you please add a few comments?
+*I can understand what did you mean below. Could you please add a few comments?*
 
-Besides, the GET method needs parameters to tell the server what you want. 
+*Besides, the GET method needs parameters to tell the server what you want.* 
 
-For example,
+*For example,*
 
-get(username="Lee")
+*get(username="Lee")*
 
 # API Command
 ## Page 1
@@ -17,7 +17,7 @@ get(username="Lee")
 
 ##### Get
 
-```json
+```
 userInfo{
 	username
     useremail
@@ -46,7 +46,7 @@ None
 
 #####   Get
 
-```json
+```
 todayTestWordList{
 	userID
   	testID
@@ -69,7 +69,7 @@ todayTestWordList{
 
 #####   Post
 
-```json
+```
 getTestList{
 	userID
 }
@@ -91,7 +91,7 @@ todayTestResult{
 
 ### Finish Page
 
-```json
+```
 Get 
 
 None
@@ -107,7 +107,7 @@ AGAIN // 是否来多一组
 
 ##### Get
 
-```json
+```
 SevenDayData{
 	[
 		just known word count
@@ -123,7 +123,7 @@ learned word(all word except new word) total
 ```
 ##### Post
 
-```json
+```
 getRecentInfo{
 	userID
 }
@@ -135,14 +135,14 @@ getRecentInfo{
 
 ##### Get
 
-```json
+```
 todayRecordWordList{} // same in page1 todayTestWordList
 totalRecordWordList{} // no options, all the words learned(familiar degree <> 0) will be on the list
 ```
 
 ##### Post	
 
-```json
+```
 changeWordFamiliarDegree{
 	userId
 	wordId
@@ -160,7 +160,7 @@ changeWordFamiliarDegree{
 
 ##### Get
 
-```json
+```
 userID
 username
 userphone
@@ -175,7 +175,7 @@ learned word total
 
 ##### Post
 
-```json
+```
 ChangeBookList{
 	wordListName
 	wordListId
@@ -187,7 +187,7 @@ ChangeBookList{
 ##### Post
 
 
-```json
+```
 FeedBackInfo{
 	feedbackId
 	feedbackInfo
