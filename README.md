@@ -3,7 +3,7 @@ This a the server end of the final database project
 
 ###### Re:
 
-*I can understand what did you mean below. Could you please add a few comments?*
+*I can not understand what you mean below. Could you please add a few comments?*
 
 *Besides, the GET method needs parameters to tell the server what you want.* 
 
