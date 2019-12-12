@@ -8,7 +8,7 @@
 from flask import Flask
 from flask import request
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="web", static_url_path="")
 
 test_file = "test.html"
 with open(test_file, encoding='utf-8') as f:
@@ -37,14 +37,7 @@ def news():
 
 @app.route('/')
 def home():
-    return """
-    Welcome!
-    Now, you can use: 
-        "/news"
-        "/user/..."
-        "/path/..."
-        "post/.."
-    """
+    return app.send_static_file('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
