@@ -12,23 +12,63 @@ This a the server end of the final database project
 *get(username="Lee")*
 
 # API Command
-## Page 1
-### Front Page
 
-##### Get
+## Login page
+
+### Sign up
+
+##### Post
 
 ```
-userInfo{
-	username
-    useremail
-    userplan{
-    	wordlistName
-      	already recite
-      	remained
-      	today's learn
-      	today's review
-      	continuous //  连续多少天
-    }
+{
+	"username":""
+	"phonenumber":""
+	"mail":""
+	"password":""
+}
+
+return {
+	"errorcode":int	//([0:success,1:phone number error,2:mail error]
+	"UID": ""
+}
+```
+
+### Sign in
+
+##### Post
+
+```
+{
+	"type":int //([0:UID,1:phone number,2:mail])
+	"info":""
+	"password":""
+}
+
+return {
+	"errorcode":int //[0:success,1:fail]
+	"username":""
+	"phonenumber":""
+	"mail":""
+	"UID": ""
+}
+```
+
+
+
+## Page 1
+
+### Front Page
+
+##### Get("./user/UID/overview")
+
+```
+return {
+    "wordlistName":""		//用户选择的单词本
+    "alreadyRecite":int		//总共背（浏览过）的单词数
+    "remained":int			//剩余单词数
+    "today's learn":int		//今天要学的单词数
+    "today's review":int	//今天需要复习的单词数
+    "continuous":int		//连续多少天背单词
 }
 ```
 
@@ -44,47 +84,54 @@ None
 
 ### Test Page
 
-#####   Get
+#####   Get("./plan/UID/\<int\>")
 
 ```
-todayTestWordList{
-	userID
-  	testID
-  	listSize
-  	wordListName
-  	[
-    	wid
-		vid
-    	English
-    	Chinese
-		familiarDegree 	 	// 0(almost new) 1(just known) 2(familiar) 3(keep firmly in mind)
-		options[A,B,C,D]	//list 
-		correctOption
-		*partOfSpeech
-		*pronounciation	
-        //...
+return{
+	"todayLearn":[
+		("TID",
+		"WID",
+		"熟练度",
+		"options"//[A,B,C,D]
+		)
+	]
+	"todayReview"[
+		("TID",
+		"WID",
+		"熟练度",
+		"options"//[A,B,C,D]
+		)
 	]
 }
 ```
+
+##### GET("./word/WID")
+
+```
+return{
+	"word":""
+	"Chinese":""
+	"音标":""
+	"词性":""
+}
+```
+
+
 
 #####   Post
 
 ```
-getTestList{
-	userID
+{
+	"result":[
+		("WID":""
+		"熟练度":int//(0,1,2,3)
+		//"":"")
+	]
+	"start":"2019-12-01-10-30-12"
+	"end":"2019-12-01-10-40-02"
 }
 
-todayTestResult{
-	userID
-	testID
-	listSize
-	[
-		wordId
-		vocabId
-		familiarDegree
-	]
-	activeTime
-}
+return bool
 ```
 
 
@@ -105,48 +152,49 @@ AGAIN // 是否来多一组
 
 ### Information
 
-##### Get
+##### Get(./info/UID)
 
 ```
-SevenDayData{
-	[
-		just known word count
-		familiar word count 
-		keep firmly in mind word count
-	]*7
+return{
+	"info":[
+		(1,	
+		2,
+		3,
+		active time,//int 
+		)
+	]
+	"active":[
+		active degree:int
+	]//(24,1)
 }
-
-mastered word(keep firmly in mind or familiar word) total
-learned word(all word except new word) total
-
-.............// 还有啥你们想想
 ```
 ##### Post
 
-```
-getRecentInfo{
-	userID
-}
-```
-
-## Page3
+## Page 3
 
 ### record
 
-##### Get
+##### Get("./plan/UID")
 
 ```
-todayRecordWordList{} // same in page1 todayTestWordList
-totalRecordWordList{} // no options, all the words learned(familiar degree <> 0) will be on the list
+return{
+	"plan":[
+		("WID",
+		"English",
+		"Chinese",
+		"熟练度")
+	]
+}
 ```
 
 ##### Post	
 
 ```
-changeWordFamiliarDegree{
-	userId
-	wordId
-	familiarDegree
+{
+	"newplan":[
+		("WID",
+		"熟练度")
+	]
 }
 ```
 
@@ -158,27 +206,39 @@ changeWordFamiliarDegree{
 
 ### user Info Full
 
-##### Get
+##### Get("./user/UID/info")
 
 ```
-userID
-username
-userphone
-sex
-scholar
-wordListName // 当前正在背的单词书
-mastered word total 
-learned word total
+return{
+	"avatar":"base64"//default='0'
+	"sex":""
+	"scholar":""
+	"grade":""
+}
 ```
+
+##### Post
+
+```
+{
+	"username":""
+	"avatar":"base64"//default='0'
+	"sex":""
+	"scholar":""
+	"grade":""
+}
+```
+
+
 
 ### Change Book List
 
 ##### Post
 
 ```
-ChangeBookList{
-	wordListName
-	wordListId
+{
+	"wordListName"
+	"wordListId"
 } // 然后更新个人信息
 ```
 
@@ -188,9 +248,8 @@ ChangeBookList{
 
 
 ```
-FeedBackInfo{
-	feedbackId
-	feedbackInfo
-	UserId
+{
+	"feedbackInfo":""
+	"UId":""
 }
 ```
