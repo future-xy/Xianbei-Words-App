@@ -1,7 +1,7 @@
 # Database Final Project_server
 This a the server end of the final database project
 
-###### NOTE: You should not trust theses APIs yet.
+###### NOTE: This is not the formal API. You should not trust theses APIs yet.
 
 # API Command
 
@@ -9,14 +9,14 @@ This a the server end of the final database project
 
 ### Sign up
 
-##### Post
+##### Post("./signup")
 
 ```
 {
-	"username":""
-	"phonenumber":""
-	"mail":""
-	"password":""
+	"Uname":""		//user name
+	"Pnumber":""	//phone number
+	"Mail":""		//maill address
+	"PW":""			//password
 }
 
 return {
@@ -27,20 +27,20 @@ return {
 
 ### Sign in
 
-##### Post
+##### Post("./signin")
 
 ```
 {
 	"type":int //([0:UID,1:phone number,2:mail])
 	"info":""
-	"password":""
+	"PW":""
 }
 
 return {
 	"errorcode":int //[0:success,1:fail]
-	"username":""
-	"phonenumber":""
-	"mail":""
+	"Uname":""
+	"Pnumber":""
+	"Mail":""
 	"UID": ""
 }
 ```
@@ -55,24 +55,14 @@ return {
 
 ```
 return {
-    "wordlistName":""		//用户选择的单词本
+    "Vname":""				//用户选择的单词计划
     "alreadyRecite":int		//总共背（浏览过）的单词数
     "remained":int			//剩余单词数
-    "today's learn":int		//今天要学的单词数
-    "today's review":int	//今天需要复习的单词数
+    "today learn":int		//今天要学的单词数
+    "today review":int		//今天需要复习的单词数
     "continuous":int		//连续多少天背单词
 }
 ```
-
-
-
-#####   Post
-
-```
-None 
-```
-
-
 
 ### Test Page
 
@@ -83,15 +73,15 @@ return{
 	"todayLearn":[
 		("TID",
 		"WID",
-		"熟练度",
-		"options"//[A,B,C,D]
+		"Proficiency",		//熟练度
+		"options"			//[A,B,C,D]
 		)
 	]
 	"todayReview"[
 		("TID",
 		"WID",
-		"熟练度",
-		"options"//[A,B,C,D]
+		"Proficiency",		//熟练度
+		"options"			//[A,B,C,D]
 		)
 	]
 }
@@ -101,22 +91,22 @@ return{
 
 ```
 return{
-	"word":""
+	"English":""
 	"Chinese":""
-	"音标":""
-	"词性":""
+	"Psymbol":""	//phonetic symbol
 }
 ```
 
 
 
-#####   Post
+#####   Post("./plan/UID")
 
 ```
 {
 	"result":[
-		("WID":""
-		"熟练度":int//(0,1,2,3)
+		("TID":"",
+		"WID":"",
+		"Proficiency":int,	//(0,1,2,3)
 		//"":"")
 	]
 	"start":"2019-12-01-10-30-12"
@@ -124,20 +114,6 @@ return{
 }
 
 return bool
-```
-
-
-
-### Finish Page
-
-```
-Get 
-
-None
-
-Post 
-
-AGAIN // 是否来多一组
 ```
 
 ## Page 2
@@ -152,16 +128,14 @@ return{
 		(1,	
 		2,
 		3,
-		active time,//int 
+		active time,		//int 
 		)
 	]
-	"active":[
+	"Ahour":[				//active hours
 		active degree:int
-	]//(24,1)
+	]						//(24,1)
 }
 ```
-##### Post
-
 ## Page 3
 
 ### record
@@ -171,21 +145,25 @@ return{
 ```
 return{
 	"plan":[
-		("WID",
+		("TID",
+		"WID",
 		"English",
 		"Chinese",
-		"熟练度")
+		"Proficiency"
+		)
 	]
 }
 ```
 
-##### Post	
+##### Post("./plan/UID")
 
 ```
 {
 	"newplan":[
-		("WID",
-		"熟练度")
+		("TID",
+		"WID",
+		"Proficiency"
+		)
 	]
 }
 ```
@@ -202,22 +180,22 @@ return{
 
 ```
 return{
-	"avatar":"base64"//default='0'
-	"sex":""
-	"scholar":""
-	"grade":""
+	"Avatar":"base64"	//default='0'
+	"Sex":""			//M/F/U
+	"Education":""		
+	"Grade":""
 }
 ```
 
-##### Post
+##### Post("./user/UID/info")
 
 ```
 {
-	"username":""
-	"avatar":"base64"//default='0'
-	"sex":""
-	"scholar":""
-	"grade":""
+	"Uname":""
+	"Avatar":"base64"	//default='0'
+	"Sex":""
+	"Education":""
+	"Grade":""
 }
 ```
 
@@ -225,23 +203,23 @@ return{
 
 ### Change Book List
 
-##### Post
+##### Post("./user/UID/plan")
 
 ```
 {
-	"wordListName"
-	"wordListId"
+	"Vname"
+	"VID"
 } // 然后更新个人信息
 ```
 
 ### Feedback Page
 
-##### Post
+##### Post("./feedback")
 
 
 ```
 {
-	"feedbackInfo":""
+	"Info":""
 	"UId":""
 }
 ```
