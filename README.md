@@ -159,7 +159,7 @@ return{
 
 ```
 {
-	"newplan":[
+	"result":[
 		("TID",
 		"WID",
 		"Proficiency"
