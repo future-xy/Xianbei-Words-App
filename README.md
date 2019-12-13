@@ -1,15 +1,7 @@
 # Database Final Project_server
 This a the server end of the final database project
 
-###### Re:
-
-*I can not understand what you mean below. Could you please add a few comments?*
-
-*Besides, the GET method needs parameters to tell the server what you want.* 
-
-*For example,*
-
-*get(username="Lee")*
+###### NOTE: You should not trust theses APIs yet.
 
 # API Command
 
