@@ -8,7 +8,17 @@
 from flask import Flask
 from flask import request
 
+import logging
+
 app = Flask(__name__, static_folder="web", static_url_path="")
+
+# 日志系统配置
+handler = logging.FileHandler('app.log', encoding='UTF-8')
+# 设置日志文件，和字符编码
+logging_format = logging.Formatter(
+    '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+handler.setFormatter(logging_format)
+app.logger.addHandler(handler)
 
 
 # home page
@@ -85,6 +95,9 @@ def getInfo(UID):
 
 @app.route('/feedback', methods=['POST'])
 def feedback():
+    # app.logger.error("FEEDBACK")
+    # app.logger.info("FEEDBACK")
+    # app.logger.warning("WARNING")
     pass
     # return "FEEDBACK"
 
