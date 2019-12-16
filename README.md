@@ -20,8 +20,8 @@ This a the server end of the final database project
 }
 
 return {
-	"errorcode":int	//([0:success,1:phone number error,2:mail error]
-	"UID": ""
+	"message":int	//([0:success,1:phone number error,2:mail error]
+	"data":""		//UID
 }
 ```
 
@@ -31,17 +31,19 @@ return {
 
 ```
 {
-	"type":int //([0:UID,1:phone number,2:mail])
-	"info":""
-	"PW":""
+	"type":int 	//([0:UID,1:phone number,2:mail])
+	"info":""	//UID,Phone number,mail
+	"PW":""		//password
 }
 
 return {
-	"errorcode":int //[0:success,1:fail]
-	"Uname":""
-	"Pnumber":""
-	"Mail":""
-	"UID": ""
+	"message":int	//[0:success,1:fail]
+	"data":{
+		"Uname":""
+		"Pnumber":""
+		"Mail":""
+		"UID": ""
+	}
 }
 ```
 
@@ -55,12 +57,15 @@ return {
 
 ```
 return {
-    "Vname":""				//用户选择的单词计划
-    "alreadyRecite":int		//总共背（浏览过）的单词数
-    "remained":int			//剩余单词数
-    "today learn":int		//今天要学的单词数
-    "today review":int		//今天需要复习的单词数
-    "continuous":int		//连续多少天背单词
+	"message":int				//success=0, fail=1
+	"data":{
+	    "Vname":""				//用户选择的单词计划
+        "alreadyRecite":int		//总共背（浏览过）的单词数
+        "remained":int			//剩余单词数
+        "today learn":int		//今天要学的单词数
+        "today review":int		//今天需要复习的单词数
+        "continuous":int		//连续多少天背单词
+	}
 }
 ```
 
@@ -70,20 +75,21 @@ return {
 
 ```
 return{
-	"todayLearn":[
-		("TID",
-		"WID",
-		"Proficiency",		//熟练度
-		"options"			//[A,B,C,D]
-		)
-	]
-	"todayReview"[
-		("TID",
-		"WID",
-		"Proficiency",		//熟练度
-		"options"			//[A,B,C,D]
-		)
-	]
+	"message":int				//success=0, fail=1
+	"data":{
+		"todayLearn":[(
+            "TID",
+            "WID",
+            "Proficiency",		//熟练度
+            "options"			//[A,B,C,D]
+            )]
+        "todayReview"[(
+            "TID",
+            "WID",
+            "Proficiency",		//熟练度
+            "options"			//[A,B,C,D]
+            )]
+	}
 }
 ```
 
@@ -91,9 +97,12 @@ return{
 
 ```
 return{
-	"English":""
-	"Chinese":""
-	"Psymbol":""	//phonetic symbol
+	"message":int		//success=0, fail=1
+	"data":{
+		"English":""
+		"Chinese":""
+		"Psymbol":""	//phonetic symbol
+	}
 }
 ```
 
@@ -103,18 +112,20 @@ return{
 
 ```
 {
-	"result":[
-		("TID":"",
+	"result":[(
+		"TID":"",
 		"WID":"",
 		"Proficiency":int,	//(0,1,2,3)
 		"Reserved":""		//预留一个位置，后面还想加一点信息
-		)
-	]
+		)]
 	"start":"2019-12-01-10-30-12"
 	"end":"2019-12-01-10-40-02"
 }
 
-return bool
+return{
+	"message":int	//success=0, fail=1
+	"data":{}
+} 
 ```
 
 ## Page 2
@@ -125,16 +136,18 @@ return bool
 
 ```
 return{
-	"info":[
-		(1,	
-		2,
-		3,
-		active time,		//int 
-		)
-	]
-	"Ahour":[				//active hours
-		active degree:int
-	]						//(24,1)
+	"message":int				//success=0, fail=1
+	"data":{
+		"info":[(
+			1,	
+            2,
+            3,
+            active time,		//int 
+        )]
+        "Ahour":[				//active hours
+            active degree:int
+        ]						//(24,1) I will build an example to clarify this --fy
+	}
 }
 ```
 ## Page 3
@@ -145,14 +158,14 @@ return{
 
 ```
 return{
-	"plan":[
-		("TID",
+	"message":int	//success=0, fail=1
+	"data":[(
+		"TID",
 		"WID",
 		"English",
 		"Chinese",
 		"Proficiency"
-		)
-	]
+	)]
 }
 ```
 
@@ -160,12 +173,11 @@ return{
 
 ```
 {
-	"result":[
-		("TID",
+	"result":[(
+		"TID",
 		"WID",
 		"Proficiency"
-		)
-	]
+	)]
 }
 ```
 
@@ -181,10 +193,13 @@ return{
 
 ```
 return{
-	"Avatar":"base64"	//default='0'
-	"Sex":""			//M/F/U
-	"Education":""		
-	"Grade":""
+	"message":int			//success=0, fail=1
+	"data":{
+		"Avatar":"base64"	//default='0'
+        "Sex":""			//M/F/U
+        "Education":""		
+        "Grade":""
+	}
 }
 ```
 
