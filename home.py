@@ -5,10 +5,10 @@
 # Author  : Fu Yao
 # Mail    : fy38607203@163.com
 
+import logging
+
 from flask import Flask
 from flask import request
-
-import logging
 
 app = Flask(__name__, static_folder="web", static_url_path="")
 
@@ -100,6 +100,25 @@ def feedback():
     # app.logger.warning("WARNING")
     pass
     # return "FEEDBACK"
+
+
+@app.route("/test/<UID>", methods=['POST', 'GET'])
+def test(UID):
+    print(UID)
+    if request.method == 'POST':
+        # print(request.headers)
+        # print(request.json['data'])
+        # print(request.json['data']['username'])
+        # print(request.json['data']['password'])
+        # print(request.json['data']['phone'])
+        # print(request.form['data'])
+        return {"data": str(UID)}
+        # return "USER:{} pw:{} phone:{}".format(request.form['username'], request.form['password'],
+        #                                        request.form['phone'])
+    else:
+        # json.dump()
+        # d = json.encoder()
+        return {"data": str(UID)}
 
 
 # @app.route('/post/<int:post_id>')
