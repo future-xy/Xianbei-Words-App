@@ -10,7 +10,11 @@ import logging
 from flask import Flask
 from flask import request
 
+from sql.sillySQL import sillySQL
+
 app = Flask(__name__, static_folder="web", static_url_path="")
+
+database = sillySQL()
 
 # 日志系统配置
 handler = logging.FileHandler('app.log', encoding='UTF-8')
@@ -43,6 +47,12 @@ def signin():
 # front page
 @app.route('/user/<UID>/overview', methods=['GET'])
 def hello(UID):
+    res = {"message": 1, "data": {}}
+    data = database.SELECTfromWHERE("PLAN", "UID=" + UID)
+    header = data[0]
+    t = header.index["TID"]
+    data=database.SELECTfromTwoTableWHERE("")
+    # print(type(UID))
     # return str(UID)
     pass
 
