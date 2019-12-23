@@ -5,6 +5,8 @@ class sillySQL:
     def __init__(self):
         self.conn = None
         self.cur = None
+        self.bind()
+
 
     def _valueToStr(self, val):
         if type(val) == str:
@@ -12,13 +14,21 @@ class sillySQL:
         else:
             return str(val)
 
+    def _conditionToStr(self, condition):
+        condition_statement=""
+        for i,(key, val) in enumerate(condition.items()):
+            if i>0:
+                condition_statement+=" and "
+            condition_statement+=key+'='+self._valueToStr(val)
+        
+        return condition_statement
+
     # 连接和断开本地psql数据库
     def bind(self):
         self.conn = None
         self.cur = None
         try:
-            self.conn = psycopg2.connect(database="untitled0", user="postgres", password="OPEN", host="127.0.0.1",
-                                         port="5432")
+            self.conn=psycopg2.connect(database="database0", user="postgres", password="sysu_sdcs_db2019", host="111.231.250.160",port="5432")
         except:
             print('Unanble to connect to the dababase')
             return
@@ -34,9 +44,9 @@ class sillySQL:
 
     # 简单的查询
     def SELECTfromWHERE(self, tablename, condition=None):
-        statement = 'SELECT * FROM %s' % tablename
+        statement = "SELECT * FROM %s" % tablename
         if condition != None:
-            statement += ' WHERE %s' % condition
+            statement += " WHERE %s"%self._conditionToStr(condition)
         statement += ';'
         self.cur.execute(statement)
         TABLE_result = self.cur.fetchall()
@@ -45,10 +55,10 @@ class sillySQL:
         return TABLE_result
 
     def SELECTfromTwoTableWHERE(self, tablename1, tablename2, condition=None):
-        statement = 'SELECT * FROM %s NATURAL JOIN %s' % (tablename1, tablename2)
+        statement = "SELECT * FROM %s NATURAL JOIN %s" % (tablename1, tablename2)
         if condition != None:
-            statement += ' WHERE %s' % condition
-        statement += ';'
+            statement += " WHERE %s" %self._conditionToStr(condition)
+        statement += ";"
         self.cur.execute(statement)
         TABLE_result = self.cur.fetchall()
         TABLE_header = list(map(lambda x: x[0], self.cur.description))
@@ -59,7 +69,7 @@ class sillySQL:
         # statement='UPDATE '+tablename+' SET '+ITEM+'='+str(new_value)
         statement = "UPDATE %s SET %s = %s" % (tablename, item, self._valueToStr(new_value))
         if condition != None:
-            statement += " WHERE %s" % condition
+            statement += " WHERE %s" %self._conditionToStr(condition)
         statement += ";"
         self.cur.execute(statement)
         self.conn.commit()
@@ -69,7 +79,7 @@ class sillySQL:
         if condition == None:
             print('Condition Needed, or the whole tabel will be removed.')
             return
-        statement = 'DELETE FROM %s WHERE %s;' % (tablename, condition)
+        statement = "DELETE FROM %s WHERE %s;" % (tablename, self._conditionToStr(condition))
         self.cur.execute(statement)
         self.conn.commit()
         return
