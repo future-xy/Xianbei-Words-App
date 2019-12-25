@@ -16,11 +16,16 @@ class sillySQL:
 
     def _conditionToStr(self, condition):
         condition_statement=""
-        for i,(key, val) in enumerate(condition.items()):
-            if i>0:
+        for (key, val) in condition.items():
+            if len(condition_statement)>0:
                 condition_statement+=" and "
-            condition_statement+=key+'='+self._valueToStr(val)
-        
+            sub_condition_statement=""
+            for v in val:
+                if len(sub_condition_statement)>0:
+                    sub_condition_statement+=" or "
+                sub_condition_statement+=key+"="+self._valueToStr(v)
+            
+            condition_statement+="("+sub_condition_statement+")"
         return condition_statement
 
     # 连接和断开本地psql数据库
@@ -106,4 +111,7 @@ class sillySQL:
         pass
 
     def LoadUserMessage(self, userInformation):
+        pass
+
+    def createViewFor(self):
         pass
