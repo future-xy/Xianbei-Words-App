@@ -26,6 +26,14 @@ handler.setFormatter(logging_format)
 app.logger.addHandler(handler)
 
 
+def newID(table, name):
+    id = randID()
+    while len(database.SELECTfromWHERE(table, {name: [id]})) > 1:
+        app.logger.info("ID conflict!")
+        id = randID()
+    return id
+
+
 # home page
 @app.route('/')
 def home():
@@ -40,22 +48,19 @@ def signup():
         form = request.json['data']
         value = [form[key] for key in keys]
         if DEBUG:
-            app.logger.debug('Post in Signup: {}'.format(value))
+            app.logger.debug('Post: {}'.format(value))
         for i in range(1, len(value) - 1):
             data = database.SELECTfromWHERE('USERS', {keys[i]: [value[i]]})
             if len(data) > 1:
                 return {'message': i, 'data': ''}
-        uid = newID()
+        uid = newID('USERS', 'UID')
         if DEBUG:
             app.logger.debug('New UID: {}'.format(uid))
-        while len(database.SELECTfromWHERE('USERS', {'UID': [uid]})) > 1:
-            app.logger.info("UID conflict!")
-            uid = newID()
         # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
         database.INSERTvalues('USERS', (uid, value[0], value[3], None, value[2], value[1], 'U', None, None))
         return {'message': 0, 'data': uid}
     else:
-        app.logger.warning("Not supported method in Signup: {}".format(request.method))
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 @app.route('/signin', methods=['POST'])
@@ -65,7 +70,7 @@ def signin():
     if request.method == 'POST':
         form = request.json['data']
         if DEBUG:
-            app.logger.debug('Post in Signup: {}'.format(form))
+            app.logger.debug('Post: {}'.format(form))
         tp = form['type']
         info = form['info']
         data = database.SELECTfromWHERE('USERS', {types[tp]: [info]})
@@ -81,19 +86,22 @@ def signin():
         index = [header.index(key.lower()) for key in keys]
         return {'message': 0, 'data': {keys[i]: data[index[i]] for i in range(len(keys))}}
     else:
-        app.logger.warning("Not supported method in Signin: {}".format(request.method))
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # front page
 @app.route('/user/<UID>/overview', methods=['GET'])
 def hello(UID):
-    res = {"message": 1, "data": {}}
-    data = database.SELECTfromWHERE("PLAN", "UID=" + UID)
-    header = data[0]
-    t = header.index["TID"]
-    data = database.SELECTfromTwoTableWHERE("")
-    # print(type(UID))
-    # return str(UID)
+    learn = 100
+    review = 150
+    have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
+    not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
+    yest = yesterday()
+    record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [yest]})
+    if len(record) == 1:
+        cont = 0
+    else:
+        cont=record[0].index('')
     pass
 
 
@@ -145,11 +153,17 @@ def getInfo(UID):
 
 @app.route('/feedback', methods=['POST'])
 def feedback():
-    # app.logger.error("FEEDBACK")
-    # app.logger.info("FEEDBACK")
-    # app.logger.warning("WARNING")
-    pass
-    # return "FEEDBACK"
+    if request.method == 'POST':
+        form = request.json['data']
+        uid = form['UID']
+        info = form['Info']
+        fid = newID('FEEDBACK', 'FID')
+        if DEBUG:
+            app.logger.debug('New FID: {}'.format(fid))
+            app.logger.debug('Feedback: {} from {}'.format(info, uid))
+        database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 @app.route("/test/<UID>", methods=['POST', 'GET'])
@@ -191,5 +205,4 @@ def test(UID):
 
 
 if __name__ == '__main__':
-    print("!")
     app.run(host='0.0.0.0', port=9102, debug=True)
