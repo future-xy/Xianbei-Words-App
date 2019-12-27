@@ -52,7 +52,7 @@ def signup():
             app.logger.info("UID conflict!")
             uid = newID()
         # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
-        database.INSERTvalues('USERS', (uid, value[0], value[3], '', value[2], value[1], 'U', '', ''))
+        database.INSERTvalues('USERS', (uid, value[0], value[3], None, value[2], value[1], 'U', None, None))
         return {'message': 0, 'data': uid}
     else:
         app.logger.warning("Not supported method in Signup: {}".format(request.method))
@@ -73,6 +73,8 @@ def signin():
             return {'message': 1, 'data': ''}
         header = data[0]
         data = data[1]
+        if data[header.index('pw')] != form['PW']:
+            return {'message': 1, 'data': ''}
         if DEBUG:
             app.logger.debug('Header: {}'.format(header))
             app.logger.debug('Select data: {}'.format(data))
@@ -189,4 +191,5 @@ def test(UID):
 
 
 if __name__ == '__main__':
+    print("!")
     app.run(host='0.0.0.0', port=9102, debug=True)
