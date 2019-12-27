@@ -92,17 +92,42 @@ def signin():
 # front page
 @app.route('/user/<UID>/overview', methods=['GET'])
 def hello(UID):
-    learn = 100
-    review = 150
-    have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
-    not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
-    yest = yesterday()
-    record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [yest]})
-    if len(record) == 1:
-        cont = 0
+    if request.method == 'GET':
+        learn = 100
+        review = 150
+        have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
+        not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
+        if len(have_learned) + len(not_learned) == 2:
+            return {"message": 1, "data": ""}
+        review = min(review, len(have_learned) - 1)
+        learn = max(learn, len(not_learned) - 1)
+        t_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today()]})
+        # 如果今天还没由背单词
+        if len(t_record) == 1:
+            y_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [yesterday()]})
+            # 如果昨天没有背单词
+            if len(y_record) == 1:
+                cont = 0
+            else:
+                cont = y_record[1][y_record[0].index('aday')]
+        else:
+            cont = t_record[1][t_record[0].index('aday')]
+        if len(not_learned) > 1:
+            tid = not_learned[1][not_learned[0].index('tid')]
+        else:
+            tid = have_learned[1][have_learned[0].index('tid')]
+        data = database.SELECTfromTwoTableWHERE('VOCABULARY', 'TAKES', {'TID': [tid]})
+        vname = data[1][data[0].index('vname')]
+        return {"message": 0, "data": {
+            "Vname": vname,
+            "alreadyRecite": len(have_learned) - 1,
+            "remained": len(not_learned) - 1,
+            "today learn": learn,
+            "today review": review,
+            "continuous": cont,
+        }}
     else:
-        cont=record[0].index('')
-    pass
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 @app.route('/user/<UID>/info', methods=['GET', 'POST'])
