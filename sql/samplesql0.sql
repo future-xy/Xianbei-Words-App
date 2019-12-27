@@ -1,27 +1,27 @@
 --DatabaseName : database0
 CREATE DATABASE database0;
 CREATE TABLE USERS(
-	UID CHAR(32) PRIMARY KEY NOT NULL,
-	Uname CHAR(64) NOT NULL,
-	PW CHAR(64) NOT NULL,
+	UID VARCHAR(32) PRIMARY KEY NOT NULL,
+	Uname VARCHAR(64) NOT NULL,
+	PW VARCHAR(64) NOT NULL,
 	Avatar VARCHAR(256),
-	Mail CHAR(64),
-	Pnumber CHAR(32),
-	Sex BOOLEAN,
-	Education CHAR(32),
+	Mail VARCHAR(64),
+	Pnumber VARCHAR(32),
+	Sex CHAR(1),
+	Education VARCHAR(32),
 	Grade int
 );
 -- USER IS NOT an available table name???
 
 insert into users(UID,Uname,PW,Avatar,Mail,Pnumber,Sex,Education,Grade) VALUES
-('0001'	,	'LM'	,	'123456'	,	Null,'LM@123.com','13900008888',	TRUE,'Undergraduate',3),
-('0002'	,	'WM'	,	'123456'	,	Null,'WM@123.com','18900006666',	FALSE,'Senior',	2),
+('0001'	,	'LM'	,	'123456'	,	Null,'LM@123.com','13900008888',	'M','Undergraduate',3),
+('0002'	,	'WM'	,	'123456'	,	Null,'WM@123.com','18900006666',	'F','Senior',	2),
 ('0003'	,	'LW'	,	'123456'	,	Null,'LW@123.com','13800007777',	NULL,'Undergraduate',1);
 -- TRUE IS MALE, FALSE IS FEMALE
 CREATE TABLE DICTIONARY(
-	WID CHAR(32) PRIMARY KEY NOT NULL,
-	English CHAR(64) NOT NULL,
-	Psymbol CHAR(32),
+	WID VARCHAR(32) PRIMARY KEY NOT NULL,
+	English VARCHAR(64) NOT NULL,
+	Psymbol VARCHAR(32),
 	Chinese TEXT[]
 );
 
@@ -33,11 +33,11 @@ insert into DICTIONARY(WID,English,Psymbol,Chinese) VALUES
 ('0005','vanish','[ˈvæniʃ]','{"vi. 消失；突然不见；成为零","vt. 使不见，使消失","n. 弱化音"}');
 
 CREATE TABLE VOCABULARY(
-	VID CHAR(32) PRIMARY KEY NOT NULL,
-	Vname CHAR(128) NOT NULL,
+	VID VARCHAR(32) PRIMARY KEY NOT NULL,
+	Vname VARCHAR(128) NOT NULL,
 	Count INT NOT NULL,
 	Day INT NOT NULL,
-	Type CHAR(64)
+	Type VARCHAR(64)
 );
 
 insert into VOCABULARY VALUES
@@ -46,9 +46,9 @@ insert into VOCABULARY VALUES
 ('0003','高考单词闪过',	3500,	100,	'高考');
 
 CREATE TABLE TAKES(
-	TID CHAR(32) PRIMARY KEY NOT NULL,
-	VID CHAR(32) NOT NULL,
-	WID CHAR(32) NOT NULL
+	TID VARCHAR(32) PRIMARY KEY NOT NULL,
+	VID VARCHAR(32) NOT NULL,
+	WID VARCHAR(32) NOT NULL
 );
 insert into TAKES VALUES
 ('0001',	'0001',	'0003'),
@@ -58,9 +58,9 @@ insert into TAKES VALUES
 ('0005',	'0003',	'0002');
 
 CREATE TABLE PLAN(
-	UID CHAR(32)	,
-	TID CHAR(32)	,
-	WID CHAR(32)	NOT NULL,
+	UID VARCHAR(32)	,
+	TID VARCHAR(32)	,
+	WID VARCHAR(32)	NOT NULL,
 	Proficiency int,
 	PRIMARY KEY(UID, TID)
 );
@@ -72,26 +72,27 @@ insert into PLAN VALUES
 ('0003',	'0003',	'0005',	23);
 
 CREATE TABLE RECORD(
-	SID CHAR(32) PRIMARY KEY NOT NULL,
-	UID CHAR(32) NOT NULL,
-	Dates char(32) NOT NULL,
+	SID VARCHAR(32) PRIMARY KEY NOT NULL,
+	UID VARCHAR(32) NOT NULL,
+	Dates VARCHAR(32) NOT NULL,
 	Count INT NOT NULL,
 	Score int NOT NULL,
 	Proficiency int[24],
-	Ahour int
+	Ahour int,
+	Aday int
 );
 insert INTO RECORD VALUES
-('0001',	'0001',	'2019-12-01',	0	,0	,'{10,0,0,0}',	0),
-('0002',	'0002',	'2019-12-01',	100	,67	,'{10,0,0,0}',	12),
-('0003',	'0003',	'2019-12-01',	30	,70	,'{10,0,0,0}',	23),
-('0004',	'0001',	'2019-12-02',	1	,0	,'{10,0,0,0}',	23),
-('0005',	'0002',	'2019-12-02',	100	,75	,'{10,0,0,0}',	12),
-('0006',	'0003',	'2019-12-02',	20	,74	,'{10,0,0,0}',	22);
+('0001',	'0001',	'2019-12-01',	0	,0	,'{10,0,0,0}',	0 ,1),
+('0002',	'0002',	'2019-12-01',	100	,67	,'{10,0,0,0}',	12,1),
+('0003',	'0003',	'2019-12-01',	30	,70	,'{10,0,0,0}',	23,1),
+('0004',	'0001',	'2019-12-02',	1	,0	,'{10,0,0,0}',	23,2),
+('0005',	'0002',	'2019-12-02',	100	,75	,'{10,0,0,0}',	12,2),
+('0006',	'0003',	'2019-12-02',	20	,74	,'{10,0,0,0}',	22,2);
 
 CREATE TABLE FEEDBACK(
-	FID CHAR(32) PRIMARY KEY NOT null,
-	UID CHAR(32) not null,
-	Dates CHAR(32) NOT NULL,
+	FID VARCHAR(32) PRIMARY KEY NOT null,
+	UID VARCHAR(32) not null,
+	Dates VARCHAR(32) NOT NULL,
 	INFO TEXT
 );
 
