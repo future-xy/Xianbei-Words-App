@@ -250,86 +250,86 @@ return{
 
 
 ### 当前所有表的信息:
-          Table "public.dictionary"
- Column  |         Type          | Modifiers 
----------+-----------------------+-----------
- wid     | character varying(32) | not null
- english | character varying(64) | not null
- psymbol | character varying(32) | 
- chinese | text[]                | 
+          dictionary
+| Column  |         Type          | Modifiers |
+|:--------|:---------------------:|----------:|
+| wid     | character varying(32) | not null|
+| english | character varying(64) | not null|
+| psymbol | character varying(32) | |
+| chinese | text[]                | |
 Indexes:
     "dictionary_pkey" PRIMARY KEY, btree (wid)
 
-         Table "public.feedback"
- Column |         Type          | Modifiers 
---------+-----------------------+-----------
- fid    | character varying(32) | not null
- uid    | character varying(32) | not null
- dates  | character varying(32) | not null
- info   | text                  | 
+         feedback
+| Column |         Type          | Modifiers |
+|:-------|:---------------------:|----------:|
+| fid    | character varying(32) | not null|
+| uid    | character varying(32) | not null|
+| dates  | character varying(32) | not null|
+| info   | text                  | |
 Indexes:
     "feedback_pkey" PRIMARY KEY, btree (fid)
 
 
-               Table "public.plan"
-   Column    |         Type          | Modifiers 
--------------+-----------------------+-----------
- uid         | character varying(32) | not null
- tid         | character varying(32) | not null
- wid         | character varying(32) | not null
- proficiency | integer               | 
+               plan
+|   Column    |         Type          | Modifiers |
+|:------------|:---------------------:|----------:|
+| uid         | character varying(32) | not null|
+| tid         | character varying(32) | not null|
+| wid         | character varying(32) | not null|
+| proficiency | integer               | |
 Indexes:
     "plan_pkey" PRIMARY KEY, btree (uid, tid)
 
-              Table "public.record"
-   Column    |         Type          | Modifiers 
--------------+-----------------------+-----------
- sid         | character varying(32) | not null
- uid         | character varying(32) | not null
- dates       | character varying(32) | not null
- count       | integer               | not null
- score       | integer               | not null
- proficiency | integer[]             | 
- ahour       | integer               | 
- aday        | integer               | 
+              record
+|   Column    |         Type          | Modifiers |
+|:------------|:---------------------:|----------:|
+| sid         | character varying(32) | not null|
+| uid         | character varying(32) | not null|
+| dates       | character varying(32) | not null|
+| count       | integer               | not null|
+| score       | integer               | not null|
+| proficiency | integer[]             | |
+| ahour       | integer               | |
+| aday        | integer               | |
 Indexes:
     "record_pkey" PRIMARY KEY, btree (sid)
 
 
-            Table "public.takes"
- Column |         Type          | Modifiers 
---------+-----------------------+-----------
- tid    | character varying(32) | not null
- vid    | character varying(32) | not null
- wid    | character varying(32) | not null
+            takes
+| Column |         Type          | Modifiers |
+|:-------|:---------------------:|----------:|
+| tid    | character varying(32) | not null|
+| vid    | character varying(32) | not null|
+| wid    | character varying(32) | not null|
 Indexes:
     "takes_pkey" PRIMARY KEY, btree (tid)
 
 
-              Table "public.users"
-  Column   |          Type          | Modifiers 
------------+------------------------+-----------
- uid       | character varying(32)  | not null
- uname     | character varying(64)  | not null
- pw        | character varying(64)  | not null
- avatar    | character varying(256) | 
- mail      | character varying(64)  | 
- pnumber   | character varying(32)  | 
- sex       | character(1)           | 
- education | character varying(32)  | 
- grade     | integer                | 
+              users
+|  Column   |          Type          | Modifiers |
+|:----------|:----------------------:|----------:|
+| uid       | character varying(32)  | not null|
+| uname     | character varying(64)  | not null|
+| pw        | character varying(64)  | not null|
+| avatar    | character varying(256) | |
+| mail      | character varying(64)  | |
+| pnumber   | character varying(32)  | |
+| sex       | character(1)           | |
+| education | character varying(32)  | |
+| grade     | integer                | |
 Indexes:
     "users_pkey" PRIMARY KEY, btree (uid)
 
 
-          Table "public.vocabulary"
- Column |          Type          | Modifiers 
---------+------------------------+-----------
- vid    | character varying(32)  | not null
- vname  | character varying(128) | not null
- count  | integer                | not null
- day    | integer                | not null
- type   | character varying(64)  | 
+          vocabulary
+| Column |          Type          | Modifiers |
+|:-------|:----------------------:|----------:|
+| vid    | character varying(32)  | not null|
+| vname  | character varying(128) | not null|
+| count  | integer                | not null|
+| day    | integer                | not null|
+| type   | character varying(64)  | |
 Indexes:
     "vocabulary_pkey" PRIMARY KEY, btree (vid)
 
