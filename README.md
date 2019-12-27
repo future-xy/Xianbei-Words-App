@@ -241,6 +241,7 @@ return{
 ```
 
 ## 关于SQL封装类的一些说明：
+- hello
 - 所有select函数的返回都是一个list，每个元素都是一个tuple表示数据，即[( ),( ),( )]。list的第0项为表头，然后是询问的数据。
 - 所有的condition都用map{item:value}表示，也就是目前只支持等值查询。**value必须是一个list**，表示item的有限的离散值域
 - 具体用例参见test_sillySQL.py
