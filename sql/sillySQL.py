@@ -12,8 +12,6 @@ class sillySQL:
         if val==None:
             return 'Null'
         if type(val) == str:
-            if str=='':
-                return 'Null'
             return "'%s'" % val
         else:
             return str(val)
