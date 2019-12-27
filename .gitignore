@@ -1,3 +1,4 @@
 .env
 /app.log
+/test.py
 web/apk/TeamViewer.apk

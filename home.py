@@ -11,6 +11,7 @@ from flask import Flask
 from flask import request
 
 from sql.sillySQL import sillySQL
+from utils import *
 
 app = Flask(__name__, static_folder="web", static_url_path="")
 
@@ -34,14 +35,51 @@ def home():
 # login page
 @app.route('/signup', methods=['POST'])
 def signup():
-    pass
-    # return "UP"
+    keys = ['Uname', 'Pnumber', 'Mail', 'PW']
+    if request.method == 'POST':
+        form = request.json['data']
+        value = [form[key] for key in keys]
+        if DEBUG:
+            app.logger.debug('Post in Signup: {}'.format(value))
+        for i in range(1, len(value) - 1):
+            data = database.SELECTfromWHERE('USERS', {keys[i]: [value[i]]})
+            if len(data) > 1:
+                return {'message': i, 'data': ''}
+        uid = newID()
+        if DEBUG:
+            app.logger.debug('New UID: {}'.format(uid))
+        while len(database.SELECTfromWHERE('USERS', {'UID': [uid]})) > 1:
+            app.logger.info("UID conflict!")
+            uid = newID()
+        # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
+        database.INSERTvalues('USERS', (uid, value[0], value[3], '', value[2], value[1], 'U', '', ''))
+        return {'message': 0, 'data': uid}
+    else:
+        app.logger.warning("Not supported method in Signup: {}".format(request.method))
 
 
 @app.route('/signin', methods=['POST'])
 def signin():
-    pass
-    # return "IN"
+    types = ['UID', 'Pnumber', 'Mail']
+    keys = ['Uname', 'Pnumber', 'Mail', 'UID']
+    if request.method == 'POST':
+        form = request.json['data']
+        if DEBUG:
+            app.logger.debug('Post in Signup: {}'.format(form))
+        tp = form['type']
+        info = form['info']
+        data = database.SELECTfromWHERE('USERS', {types[tp]: [info]})
+        if len(data) != 2:
+            return {'message': 1, 'data': ''}
+        header = data[0]
+        data = data[1]
+        if DEBUG:
+            app.logger.debug('Header: {}'.format(header))
+            app.logger.debug('Select data: {}'.format(data))
+        index = [header.index(key.lower()) for key in keys]
+        return {'message': 0, 'data': {keys[i]: data[index[i]] for i in range(len(keys))}}
+    else:
+        app.logger.warning("Not supported method in Signin: {}".format(request.method))
 
 
 # front page
@@ -51,7 +89,7 @@ def hello(UID):
     data = database.SELECTfromWHERE("PLAN", "UID=" + UID)
     header = data[0]
     t = header.index["TID"]
-    data=database.SELECTfromTwoTableWHERE("")
+    data = database.SELECTfromTwoTableWHERE("")
     # print(type(UID))
     # return str(UID)
     pass
