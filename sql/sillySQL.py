@@ -12,6 +12,7 @@ class sillySQL:
         if val==None:
             return 'Null'
         if type(val) == str:
+            val.replace("'","''")
             return "'%s'" % val
         else:
             return str(val)
@@ -98,7 +99,12 @@ class sillySQL:
             statement += self._valueToStr(v) + ","  # if type(v)==str , may be bug?
         statement = statement[:-1] + ");"
         print(statement)
-        self.cur.execute(statement)
+        try:
+            self.cur.execute(statement)
+        except:
+            print("INSERTvalues crash!!!!!!")
+            self.conn.rollback()
+            return 
         self.conn.commit()
         return
 
