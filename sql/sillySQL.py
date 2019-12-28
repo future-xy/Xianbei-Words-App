@@ -101,7 +101,7 @@ class sillySQL:
     def DELETEprecise(self, tablename, condition=None):
         if condition == None:
             print('Condition Needed, or the whole tabel will be removed.')
-            return
+            return False
         statement = "DELETE FROM %s WHERE %s;" % (tablename, self._conditionToStr(condition))
         try:
             self.cur.execute(statement)
