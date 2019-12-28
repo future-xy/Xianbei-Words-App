@@ -50,7 +50,7 @@ def signup():
             value = [form[key] for key in keys]
         except KeyError as k:
             app.logger.error("KeyError: {}".format(k.args[0]))
-            return {"message": 1, "data": ""}
+            return STD_ERROR
         else:
             app.logger.debug('Post: {}'.format(value))
             for i in range(1, len(value) - 1):
@@ -79,15 +79,15 @@ def signin():
             pw = form['PW']
         except KeyError as k:
             app.logger.error("KeyError: {}".format(k.args[0]))
-            return {"message": 1, "data": ""}
+            return STD_ERROR
         else:
             data = database.SELECTfromWHERE('USERS', {types[tp]: [info]})
             if len(data) != 2:
-                return {'message': 1, 'data': ''}
+                return STD_ERROR
             header = data[0]
             data = data[1]
             if data[header.index('pw')] != pw:
-                return {'message': 1, 'data': ''}
+                return STD_ERROR
             if DEBUG:
                 app.logger.debug('Header: {}'.format(header))
                 app.logger.debug('Select data: {}'.format(data))
@@ -107,7 +107,7 @@ def hello(UID):
         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
         if len(have_learned) + len(not_learned) == 2:
             app.logger.info("The user({}) didn't choose any vocabulary!")
-            return {"message": 1, "data": ""}
+            return STD_ERROR
         review = min(review, len(have_learned) - 1)
         learn = max(learn, len(not_learned) - 1)
         t_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today()]})
@@ -141,11 +141,32 @@ def hello(UID):
 
 @app.route('/user/<UID>/info', methods=['GET', 'POST'])
 def userInfo(UID):
-    pass
-    # if request.method == 'POST':
-    #     return str(UID) + "POST"
-    # else:
-    #     return str(UID) + "GET"
+    keys = ['Uname', 'Avatar', 'Sex', 'Education', 'Grade']
+    if request.method == 'POST':
+        try:
+            form = request.json['data']
+            value = [form[key] for key in keys]
+        except KeyError as k:
+            app.logger.error("KeyError: {}".format(k.args[0]))
+            return STD_ERROR
+        else:
+            for i in range(len(keys)):
+                database.UPDATEprecise('USERS', keys[i], value[i], "UID='{}'".format(UID))
+            return STD_OK
+    elif request.method == 'GET':
+        data = database.SELECTfromWHERE('USERS', {'UID': [UID]})
+        if len(data) != 2:
+            app.logger.warning("UID {} does not exist".format(UID))
+            return STD_ERROR
+        header = data[0]
+        data = data[1]
+        value = [data[header.index(key.lower())] for key in keys]
+        value = [v if v != None else '' for v in value]
+        return {"message": 0, "data": {
+            keys[i]: value[i] for i in range(len(keys))
+        }}
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 @app.route('/user/<UID>/plan', methods=['POST'])
@@ -194,13 +215,13 @@ def feedback():
             info = form['Info']
         except KeyError as k:
             app.logger.error("KeyError: {}".format(k.args[0]))
-            return {"message": 1, "data": ""}
+            return STD_ERROR
         else:
             fid = newID('FEEDBACK', 'FID')
             app.logger.debug('New FID: {}'.format(fid))
             app.logger.debug('Feedback: {} from {}'.format(info, uid))
             database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
-        return {"message": 0, "data": ""}
+        return STD_OK
     else:
         app.logger.warning("Not supported method: {}".format(request.method))
 

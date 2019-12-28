@@ -195,7 +195,8 @@ return{
 return{
 	"message":int			//success=0, fail=1
 	"data":{
-		"Avatar":"base64"	//default='0'
+		"Uname":""
+		"Avatar":"base64"	//default=''
         "Sex":""			//M/F/U
         "Education":""		
         "Grade":""
