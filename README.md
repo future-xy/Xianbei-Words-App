@@ -290,7 +290,7 @@ Indexes:
 | count       | integer               | not null|
 | score       | integer               | not null|
 | proficiency | integer[]             | |
-| ahour       | integer               | |
+| ahour       | numeric(10,3)[]               | |
 | aday        | integer               | |
 Indexes:
     "record_pkey" PRIMARY KEY, btree (sid)
