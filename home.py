@@ -37,6 +37,7 @@ app.logger.addHandler(file_handler)
 db_logger = logging.getLogger('Database')
 db_logger.addHandler(file_handler)
 db_logger.addHandler(stream_handler)
+db_logger.setLevel(level)
 
 database = sillySQL(logger=db_logger)
 
