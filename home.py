@@ -98,6 +98,7 @@ def hello(UID):
         have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
         if len(have_learned) + len(not_learned) == 2:
+            app.logger.info("The user({}) didn't choose any vocabulary!")
             return {"message": 1, "data": ""}
         review = min(review, len(have_learned) - 1)
         learn = max(learn, len(not_learned) - 1)
@@ -179,14 +180,19 @@ def getInfo(UID):
 @app.route('/feedback', methods=['POST'])
 def feedback():
     if request.method == 'POST':
-        form = request.json['data']
-        uid = form['UID']
-        info = form['Info']
-        fid = newID('FEEDBACK', 'FID')
-        if DEBUG:
+        try:
+            form = request.json['data']
+            uid = form['UID']
+            info = form['Info']
+        except KeyError:
+            app.logger.error(KeyError.args)
+            return {"message": 1, "data": ""}
+        else:
+            fid = newID('FEEDBACK', 'FID')
             app.logger.debug('New FID: {}'.format(fid))
             app.logger.debug('Feedback: {} from {}'.format(info, uid))
-        database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
+            database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
+        return {"message": 0, "data": ""}
     else:
         app.logger.warning("Not supported method: {}".format(request.method))
 
