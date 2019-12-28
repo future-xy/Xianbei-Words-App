@@ -12,8 +12,7 @@ class sillySQL:
         if val==None:
             return 'Null'
         if type(val) == str:
-            val.replace("'","''")
-            return "'%s'" % val
+            return "'%s'" % val.replace("'","''")
         else:
             return str(val)
 
@@ -56,7 +55,12 @@ class sillySQL:
         if condition != None:
             statement += " WHERE %s"%self._conditionToStr(condition)
         statement += ';'
-        self.cur.execute(statement)
+        try:
+            self.cur.execute(statement)
+        except:
+            print("Fail to select!!!!!!")
+            self.conn.rollback()
+            return 
         TABLE_result = self.cur.fetchall()
         TABLE_header = list(map(lambda x: x[0], self.cur.description))
         TABLE_result.insert(0, tuple(TABLE_header))
@@ -67,7 +71,12 @@ class sillySQL:
         if condition != None:
             statement += " WHERE %s" %self._conditionToStr(condition)
         statement += ";"
-        self.cur.execute(statement)
+        try:
+            self.cur.execute(statement)
+        except:
+            print("Fail to select!!!!!!")
+            self.conn.rollback()
+            return 
         TABLE_result = self.cur.fetchall()
         TABLE_header = list(map(lambda x: x[0], self.cur.description))
         TABLE_result.insert(0, tuple(TABLE_header))
@@ -79,7 +88,12 @@ class sillySQL:
         if condition != None:
             statement += " WHERE %s" %self._conditionToStr(condition)
         statement += ";"
-        self.cur.execute(statement)
+        try:
+            self.cur.execute(statement)
+        except:
+            print("Fail to update!!!!!!")
+            self.conn.rollback()
+            return 
         self.conn.commit()
         return
 
@@ -88,7 +102,12 @@ class sillySQL:
             print('Condition Needed, or the whole tabel will be removed.')
             return
         statement = "DELETE FROM %s WHERE %s;" % (tablename, self._conditionToStr(condition))
-        self.cur.execute(statement)
+        try:
+            self.cur.execute(statement)
+        except:
+            print("Fail to delete!!!!!!")
+            self.conn.rollback()
+            return 
         self.conn.commit()
         return
 

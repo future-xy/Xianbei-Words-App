@@ -10,7 +10,7 @@ db.bind()
 # print(db.SELECTfromTwoTableWHERE('USERS', 'PLAN', {'Proficiency': [100, 99]}))
 
 db.INSERTvalues('feedback',('1','2','2019-01-01'," I' m wrong"))
-print(db.SELECTfromWHERE('feedback'))
+print(db.SELECTfromWHERE('feedbac'))
 
 # tabe=db.SELECTfromTwoTableWHERE('USERS','PLAN')
 
