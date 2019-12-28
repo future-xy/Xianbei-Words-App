@@ -38,9 +38,10 @@ class sillySQL:
             self.conn=psycopg2.connect(database="database0", user="postgres", password="sysu_sdcs_db2019", host="111.231.250.160",port="5432")
         except:
             print('Unanble to connect to the dababase')
-            return
+            return False
 
         self.cur = self.conn.cursor()
+        return True
 
     def release(self):
         if self.conn != None:
@@ -60,7 +61,7 @@ class sillySQL:
         except:
             print("Fail to select!!!!!!")
             self.conn.rollback()
-            return 
+            return None
         TABLE_result = self.cur.fetchall()
         TABLE_header = list(map(lambda x: x[0], self.cur.description))
         TABLE_result.insert(0, tuple(TABLE_header))
@@ -76,7 +77,7 @@ class sillySQL:
         except:
             print("Fail to select!!!!!!")
             self.conn.rollback()
-            return 
+            return None
         TABLE_result = self.cur.fetchall()
         TABLE_header = list(map(lambda x: x[0], self.cur.description))
         TABLE_result.insert(0, tuple(TABLE_header))
@@ -93,9 +94,9 @@ class sillySQL:
         except:
             print("Fail to update!!!!!!")
             self.conn.rollback()
-            return 
+            return False
         self.conn.commit()
-        return
+        return True
 
     def DELETEprecise(self, tablename, condition=None):
         if condition == None:
@@ -107,9 +108,9 @@ class sillySQL:
         except:
             print("Fail to delete!!!!!!")
             self.conn.rollback()
-            return 
+            return False
         self.conn.commit()
-        return
+        return True
 
     # type(values)==tuple
     def INSERTvalues(self, tablename, values):
@@ -123,9 +124,9 @@ class sillySQL:
         except:
             print("INSERTvalues crash!!!!!!")
             self.conn.rollback()
-            return 
+            return False
         self.conn.commit()
-        return
+        return True
 
     # 其他高级一点的需求？
     def LoadDictionary(self, dictionary):
