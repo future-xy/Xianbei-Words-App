@@ -45,20 +45,23 @@ def home():
 def signup():
     keys = ['Uname', 'Pnumber', 'Mail', 'PW']
     if request.method == 'POST':
-        form = request.json['data']
-        value = [form[key] for key in keys]
-        if DEBUG:
+        try:
+            form = request.json['data']
+            value = [form[key] for key in keys]
+        except KeyError as k:
+            app.logger.error("KeyError: {}".format(k.args[0]))
+            return {"message": 1, "data": ""}
+        else:
             app.logger.debug('Post: {}'.format(value))
-        for i in range(1, len(value) - 1):
-            data = database.SELECTfromWHERE('USERS', {keys[i]: [value[i]]})
-            if len(data) > 1:
-                return {'message': i, 'data': ''}
-        uid = newID('USERS', 'UID')
-        if DEBUG:
+            for i in range(1, len(value) - 1):
+                data = database.SELECTfromWHERE('USERS', {keys[i]: [value[i]]})
+                if len(data) > 1:
+                    return {'message': i, 'data': ''}
+            uid = newID('USERS', 'UID')
             app.logger.debug('New UID: {}'.format(uid))
-        # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
-        database.INSERTvalues('USERS', (uid, value[0], value[3], None, value[2], value[1], 'U', None, None))
-        return {'message': 0, 'data': uid}
+            # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
+            database.INSERTvalues('USERS', (uid, value[0], value[3], None, value[2], value[1], 'U', None, None))
+            return {'message': 0, 'data': uid}
     else:
         app.logger.warning("Not supported method: {}".format(request.method))
 
@@ -68,23 +71,28 @@ def signin():
     types = ['UID', 'Pnumber', 'Mail']
     keys = ['Uname', 'Pnumber', 'Mail', 'UID']
     if request.method == 'POST':
-        form = request.json['data']
-        if DEBUG:
+        try:
+            form = request.json['data']
             app.logger.debug('Post: {}'.format(form))
-        tp = form['type']
-        info = form['info']
-        data = database.SELECTfromWHERE('USERS', {types[tp]: [info]})
-        if len(data) != 2:
-            return {'message': 1, 'data': ''}
-        header = data[0]
-        data = data[1]
-        if data[header.index('pw')] != form['PW']:
-            return {'message': 1, 'data': ''}
-        if DEBUG:
-            app.logger.debug('Header: {}'.format(header))
-            app.logger.debug('Select data: {}'.format(data))
-        index = [header.index(key.lower()) for key in keys]
-        return {'message': 0, 'data': {keys[i]: data[index[i]] for i in range(len(keys))}}
+            tp = form['type']
+            info = form['info']
+            pw = form['PW']
+        except KeyError as k:
+            app.logger.error("KeyError: {}".format(k.args[0]))
+            return {"message": 1, "data": ""}
+        else:
+            data = database.SELECTfromWHERE('USERS', {types[tp]: [info]})
+            if len(data) != 2:
+                return {'message': 1, 'data': ''}
+            header = data[0]
+            data = data[1]
+            if data[header.index('pw')] != pw:
+                return {'message': 1, 'data': ''}
+            if DEBUG:
+                app.logger.debug('Header: {}'.format(header))
+                app.logger.debug('Select data: {}'.format(data))
+            index = [header.index(key.lower()) for key in keys]
+            return {'message': 0, 'data': {keys[i]: data[index[i]] for i in range(len(keys))}}
     else:
         app.logger.warning("Not supported method: {}".format(request.method))
 
@@ -184,8 +192,8 @@ def feedback():
             form = request.json['data']
             uid = form['UID']
             info = form['Info']
-        except KeyError:
-            app.logger.error(KeyError.args)
+        except KeyError as k:
+            app.logger.error("KeyError: {}".format(k.args[0]))
             return {"message": 1, "data": ""}
         else:
             fid = newID('FEEDBACK', 'FID')
