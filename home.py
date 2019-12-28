@@ -6,6 +6,7 @@
 # Mail    : fy38607203@163.com
 
 import logging
+import sys
 
 from flask import Flask
 from flask import request
@@ -15,15 +16,29 @@ from utils import *
 
 app = Flask(__name__, static_folder="web", static_url_path="")
 
-database = sillySQL()
+if DEBUG:
+    level = logging.DEBUG
+else:
+    level = logging.INFO
 
 # 日志系统配置
-handler = logging.FileHandler('app.log', encoding='UTF-8')
+file_handler = logging.FileHandler('app.log', encoding='UTF-8')
+file_handler.setLevel(level)
+stream_handler = logging.StreamHandler(sys.stderr)
+stream_handler.setLevel(level)
 # 设置日志文件，和字符编码
 logging_format = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
-handler.setFormatter(logging_format)
-app.logger.addHandler(handler)
+file_handler.setFormatter(logging_format)
+stream_handler.setFormatter(logging_format)
+# app logger
+app.logger.addHandler(file_handler)
+# database logger
+db_logger = logging.getLogger('Database')
+db_logger.addHandler(file_handler)
+db_logger.addHandler(stream_handler)
+
+database = sillySQL(logger=db_logger)
 
 
 def newID(table, name):
@@ -40,6 +55,7 @@ def home():
     return app.send_static_file('index.html')
 
 
+# Debug
 # login page
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -66,6 +82,7 @@ def signup():
         app.logger.warning("Not supported method: {}".format(request.method))
 
 
+# Debug
 @app.route('/signin', methods=['POST'])
 def signin():
     types = ['UID', 'Pnumber', 'Mail']
@@ -97,6 +114,7 @@ def signin():
         app.logger.warning("Not supported method: {}".format(request.method))
 
 
+# Debug
 # front page
 @app.route('/user/<UID>/overview', methods=['GET'])
 def hello(UID):
@@ -139,6 +157,7 @@ def hello(UID):
         app.logger.warning("Not supported method: {}".format(request.method))
 
 
+# Debug
 @app.route('/user/<UID>/info', methods=['GET', 'POST'])
 def userInfo(UID):
     keys = ['Uname', 'Avatar', 'Sex', 'Education', 'Grade']
@@ -151,7 +170,9 @@ def userInfo(UID):
             return STD_ERROR
         else:
             for i in range(len(keys)):
-                database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]})
+                if (database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]}) == False):
+                    app.logger.error("Unable to update USER {}, item={}, value={}".format(UID, keys[i], value[i]))
+                    return STD_ERROR
             return STD_OK
     elif request.method == 'GET':
         data = database.SELECTfromWHERE('USERS', {'UID': [UID]})
@@ -206,6 +227,7 @@ def getInfo(UID):
     # return UID
 
 
+# Debug
 @app.route('/feedback', methods=['POST'])
 def feedback():
     if request.method == 'POST':
