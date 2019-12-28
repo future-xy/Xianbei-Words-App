@@ -151,7 +151,7 @@ def userInfo(UID):
             return STD_ERROR
         else:
             for i in range(len(keys)):
-                database.UPDATEprecise('USERS', keys[i], value[i], "UID='{}'".format(UID))
+                database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]})
             return STD_OK
     elif request.method == 'GET':
         data = database.SELECTfromWHERE('USERS', {'UID': [UID]})
