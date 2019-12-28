@@ -216,9 +216,19 @@ def updatePlan(UID):
     # return UID
 
 
+# Debug
 @app.route('/word/<WID>', methods=['GET'])
 def getWord(WID):
-    pass
+    keys = ['English', 'Chinese', 'Psymbol']
+    data = database.SELECTfromWHERE('DICTIONARY', {'WID': [WID]})
+    if data is False or len(data) != 2:
+        app.logger.error("Word {} not found.".format(WID))
+        return STD_ERROR
+    header = data[0]
+    data = data[1]
+    return {"message": 0, "data": {
+        key: data[header.index(key.lower())] for key in keys
+    }}
     # return WID
 
 
