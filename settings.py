@@ -13,3 +13,6 @@ ID_SPACE = string.ascii_letters + string.digits
 
 STD_ERROR = {"message": 1, "data": ""}
 STD_OK = {"message": 0, "data": ""}
+
+LEARN = 100
+REVIEW = 150

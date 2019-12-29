@@ -108,16 +108,12 @@ return{
 
 
 
-#####   Post("./plan/UID")
+#####   Post("./record/UID")
 
 ```
 {
-	"result":[(
-		"TID":"",
-		"WID":"",
-		"Proficiency":int,	//(0,1,2,3)
-		"Reserved":""		//预留一个位置，后面还想加一点信息
-		)]
+	"count":""	//背的单词数量
+	//起止时间
 	"start":"2019-12-01-10-30-12"
 	"end":"2019-12-01-10-40-02"
 }
@@ -144,9 +140,9 @@ return{
             3,
             active time,		//int 
         )]
-        "Ahour":[				//active hours
-            active degree:int
-        ]						//(24,1) I will build an example to clarify this --fy
+        "Ahour":[				
+           //长度为24的整数数组，表示过去7天每个小时的平均活跃度
+        ]					
 	}
 }
 ```
@@ -224,8 +220,7 @@ return{
 
 ```
 {
-	"Vname"
-	"VID"
+	"Vname"		//or VID 建议VID
 } // 然后更新个人信息
 ```
 

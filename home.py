@@ -13,6 +13,7 @@ from flask import request
 
 from sql.sillySQL import sillySQL
 from utils import *
+from settings import *
 
 app = Flask(__name__, static_folder="web", static_url_path="")
 
@@ -119,13 +120,13 @@ def signin():
 # front page
 @app.route('/user/<UID>/overview', methods=['GET'])
 def hello(UID):
+    global REVIEW, LEARN
+    review, learn = REVIEW, LEARN
     if request.method == 'GET':
-        learn = 100
-        review = 150
         have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
-        if len(have_learned) + len(not_learned) == 2:
-            app.logger.info("The user({}) didn't choose any vocabulary!")
+        if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
+            app.logger.error("The user({}) didn't choose any vocabulary!".format(UID))
             return STD_ERROR
         review = min(review, len(have_learned) - 1)
         learn = max(learn, len(not_learned) - 1)
@@ -171,14 +172,14 @@ def userInfo(UID):
             return STD_ERROR
         else:
             for i in range(len(keys)):
-                if (database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]}) == False):
+                if not database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]}):
                     app.logger.error("Unable to update USER {}, item={}, value={}".format(UID, keys[i], value[i]))
                     return STD_ERROR
             return STD_OK
     elif request.method == 'GET':
         data = database.SELECTfromWHERE('USERS', {'UID': [UID]})
         if len(data) != 2:
-            app.logger.warning("UID {} does not exist".format(UID))
+            app.logger.error("UID {} does not exist".format(UID))
             return STD_ERROR
         header = data[0]
         data = data[1]
@@ -191,29 +192,132 @@ def userInfo(UID):
         app.logger.warning("Not supported method: {}".format(request.method))
 
 
+# Debug
 @app.route('/user/<UID>/plan', methods=['POST'])
 def updateUserPlan(UID):
-    pass
-    # return UID
+    if request.method == 'POST':
+        try:
+            vname = request.json['data']['Vname']
+        except KeyError as k:
+            app.logger.error("KeyError: {}".format(k.args[0]))
+            return STD_ERROR
+        else:
+            vocab = database.SELECTfromWHERE('VOCABULARY', {'Vname': [vname]})
+            if vocab is False or len(vocab) != 2:
+                app.logger.error("Vocabulary {} does not exist".format(vname))
+                return STD_ERROR
+            vid = vocab[1][vocab[0].index('vid')]
+            if not database.DELETEprecise('PLAN', {'UID': [UID]}):
+                app.logger.error("Unable to delete User {} from Plan".format(UID))
+                return STD_ERROR
+            data = database.SELECTfromWHERE('TAKES', {'VID': [vid]})
+            if data is False or len(data) < 2:
+                app.logger.error("Unable to find any takes of {}".format(vname))
+                return STD_ERROR
+            header = data[0]
+            words = data[1:]
+            for word in words:
+                tid = word[header.index('tid')]
+                wid = word[header.index('wid')]
+                if not database.INSERTvalues('PLAN', (UID, tid, wid, 0)):
+                    app.logger.error("Unable to insert ({})".format((UID, tid, wid, 0)))
+                    if not database.DELETEprecise('PLAN', {'UID': [UID]}):
+                        app.logger.error("Unable to delete User {} from Plan".format(UID))
+                    return STD_ERROR
+            return STD_OK
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # test page
-@app.route('/plan/<UID>/<index>', methods=['GET'])
-def getTest(UID, index):
-    # print(UID)
-    # print(index)
-    # return "Hello" + str(UID) + str(index)
-    pass
+@app.route('/plan/<UID>/<seed>', methods=['GET'])
+def getTest(UID, seed):
+    random.seed(seed)
+    global REVIEW, LEARN
+    review, learn = REVIEW, LEARN
+    if request.method == 'GET':
+        have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
+        not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
+        if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
+            app.logger.error("The user({}) didn't choose any vocabulary!".format(UID))
+            return STD_ERROR
+        header = have_learned[0]
+        have_learned = have_learned[1:]
+        not_learned = not_learned[1:]
+        review = min(review, len(have_learned))
+        learn = max(learn, len(not_learned))
+        review_item = random.sample(have_learned, review)
+        learn_item = random.sample(not_learned, learn)
+        today_learn = []
+        for item in learn_item:
+            ops = random.sample(have_learned + not_learned, 3)
+            if item in ops:
+                ops.append(random.choice(have_learned))
+            else:
+                ops.append(item)
+            options = [op[header.index('wid')] for op in ops]
+            random.shuffle(options)
+            today_learn.append((item[header.index('tid')],
+                                item[header.index('wid')],
+                                item[header.index('proficiency')],
+                                options
+                                ))
+        today_review = []
+        for item in review_item:
+            ops = random.sample(have_learned + not_learned, 3)
+            if item in ops:
+                ops.append(random.choice(not_learned))
+            else:
+                ops.append(item)
+            options = [op[header.index('wid')] for op in ops]
+            random.shuffle(options)
+            today_review.append((item[header.index('tid')],
+                                 item[header.index('wid')],
+                                 item[header.index('proficiency')],
+                                 options
+                                 ))
+        return {"message": 0, "data": {
+            "todayLearn": today_learn,
+            "todayReview": today_review
+        }}
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
+# Debug
 @app.route('/plan/<UID>', methods=['GET', 'POST'])
 def updatePlan(UID):
-    pass
-    # if request.method == 'GET':
-    #     return "GET" + str(UID)
-    # else:
-    #     return "POST" + str(UID)
-    # return UID
+    if request.method == 'GET':
+        user_plan = database.SELECTfromTwoTableWHERE('PLAN', 'DICTIONARY', {"UID": [UID]})
+        if user_plan is False or len(user_plan) == 1:
+            app.logger.error("The user({}) didn't choose any vocabulary!".format(UID))
+            return STD_ERROR
+        header = user_plan[0]
+        data = user_plan[1:]
+        plan = []
+        for item in data:
+            plan.append((
+                item[header.index('tid')],
+                item[header.index('wid')],
+                item[header.index('english')],
+                item[header.index('chinese')],
+                item[header.index('proficiency')]
+            ))
+        return {"message": 0, "data": plan}
+    elif request.method == 'POST':
+        try:
+            res = request.json['data']['result']
+        except KeyError as k:
+            app.logger.error("KeyError: {}".format(k.args[0]))
+            return STD_ERROR
+        else:
+            for tid, wid, p in res:
+                if not database.UPDATEprecise('PLAN', 'Proficiency', p, {'UID': [UID], 'TID': [tid], 'WID': [wid]}):
+                    app.logger.error("Unable to update Plan UID: {} TID: {} WID: {}".format(UID, tid, wid))
+                    return STD_ERROR
+            return STD_OK
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -234,8 +338,10 @@ def getWord(WID):
 
 @app.route('/info/<UID>', methods=['GET'])
 def getInfo(UID):
-    pass
-    # return UID
+    if request.method == 'GET':
+        
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
