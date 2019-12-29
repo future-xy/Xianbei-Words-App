@@ -14,6 +14,13 @@ class sillySQL:
             return 'Null'
         if type(val) == str:
             return "'%s'" % val.replace("'", "''")
+        elif type(val)==list:
+            result=""
+            for v in val:
+                if len(result)>0:
+                    result+=","
+                result += str(v)
+            return "'{"+result+"}'"
         else:
             return str(val)
 
