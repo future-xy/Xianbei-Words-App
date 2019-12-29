@@ -216,6 +216,23 @@ return{
 
 ### Change Book List
 
+##### Get("./plan)
+
+```
+{
+	"message":int
+	"data":{
+		"VID":""
+		"Vname":""
+		"Count":int
+		"Day":int
+		"Type":""
+	}
+}
+```
+
+
+
 ##### Post("./user/UID/plan")
 
 ```
