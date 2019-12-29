@@ -11,6 +11,8 @@ import sys
 from flask import Flask
 from flask import request
 
+import numpy as np
+
 from sql.sillySQL import sillySQL
 from utils import *
 from settings import *
@@ -133,7 +135,7 @@ def hello(UID):
         t_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today()]})
         # 如果今天还没由背单词
         if len(t_record) == 1:
-            y_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [yesterday()]})
+            y_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today(-1)]})
             # 如果昨天没有背单词
             if len(y_record) == 1:
                 cont = 0
@@ -323,23 +325,120 @@ def updatePlan(UID):
 # Debug
 @app.route('/word/<WID>', methods=['GET'])
 def getWord(WID):
-    keys = ['English', 'Chinese', 'Psymbol']
-    data = database.SELECTfromWHERE('DICTIONARY', {'WID': [WID]})
-    if data is False or len(data) != 2:
-        app.logger.error("Word {} not found.".format(WID))
-        return STD_ERROR
-    header = data[0]
-    data = data[1]
-    return {"message": 0, "data": {
-        key: data[header.index(key.lower())] for key in keys
-    }}
-    # return WID
+    if request.method == 'GET':
+        keys = ['English', 'Chinese', 'Psymbol']
+        data = database.SELECTfromWHERE('DICTIONARY', {'WID': [WID]})
+        if data is False or len(data) != 2:
+            app.logger.error("Word {} not found.".format(WID))
+            return STD_ERROR
+        header = data[0]
+        data = data[1]
+        return {"message": 0, "data": {
+            key: data[header.index(key.lower())] for key in keys
+        }}
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
 
 
+# Debug
 @app.route('/info/<UID>', methods=['GET'])
 def getInfo(UID):
     if request.method == 'GET':
-        
+        data = database.SELECTfromWHERE('RECORD', {'UID': [UID]})
+        if data is False or len(data) < 2:
+            app.logger.error("Unable to find any record of User {}".format(UID))
+            return STD_ERROR
+        header = data[0]
+        data = data[1:]
+        sorted(data, key=lambda x: sort_by_time(x, header.index('dates'), DAY_FORMAT))
+        records = {sort_by_time(item, header.index('dates'), DAY_FORMAT): item for item in data}
+        days = 0
+        last_day = datetime.datetime.strptime(today(-6), DAY_FORMAT).timestamp()
+        for d in records:
+            if d <= last_day:
+                days = d
+        app.logger.debug(data)
+        info = []
+        ahour = np.zeros(24)
+        if days == 0:
+            info.append((0, 0, 0, 0))
+        else:
+            info.append(records[days][header.index('proficiency')][1:] +
+                        [float(sum(records[days][header.index('ahour')]))])
+            ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
+        for i in range(-5, 1):
+            days = datetime.datetime.strptime(today(i), DAY_FORMAT).timestamp()
+            if days in records:
+                info.append([records[days][header.index('proficiency')][1:]] +
+                            [float(sum(records[days][header.index('ahour')]))])
+                ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
+            else:
+                t = info[-1].copy()
+                t[3] = 0
+                info.append(t)
+        ahour /= 7
+        return {'message': 0, 'data': {
+            'info': info,
+            'Ahour': ahour.tolist()
+        }}
+    else:
+        app.logger.warning("Not supported method: {}".format(request.method))
+
+
+@app.route('/record/<UID>', methods=['POST'])
+def record(UID):
+    if request.method == 'POST':
+        try:
+            form = request.json['data']
+            count = form['count']
+            start = form['start']
+            end = form['end']
+        except KeyError as k:
+            app.logger.error("KeyError: {}".format(k.args[0]))
+            return STD_ERROR
+        else:
+            start_day = datetime.datetime.strptime(start, TIME_FORMAT)
+            now_day = start_day.replace(minute=0, second=0)
+            end_day = datetime.datetime.strptime(end, TIME_FORMAT)
+            while now_day <= end_day:
+                this_day = now_day.strftime(DAY_FORMAT)
+                today_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
+                if today_record is False or len(today_record) < 2:
+                    last_record = database.SELECTfromWHERE('RECORD', {
+                        'Dates': [(now_day - datetime.timedelta(days=1)).strftime(DAY_FORMAT)],
+                        'UID': [UID]})
+                    if last_record is False or len(last_record) == 1:
+                        aday = 0
+                    else:
+                        aday = last_record[1][last_record[0].index('aday')] + 1
+                    p = [0, 0, 0, 0]
+                    ahour = np.zeros(24).astype(np.float)
+                    for i in range(len(p)):
+                        data = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [i]})
+                        if data is False:
+                            app.logger.error("Unable to find Plan for User {}".format(UID))
+                            return STD_ERROR
+                        p[i] = len(data) - 1
+                    database.INSERTvalues('RECORD', (
+                        newID('RECORD', 'SID'), UID, this_day, count, 0, p, ahour.tolist(), aday))
+
+                else:
+                    ahour = np.array(today_record[1][today_record[0].index('ahour')])
+                ahour[now_day.hour] = ahour[now_day.hour] + 60
+                database.UPDATEprecise('RECORD', 'Ahour', ahour.tolist(), {'UID': [UID], 'Dates': [this_day]})
+                now_day = now_day + datetime.timedelta(hours=1)
+            this_day = start_day.strftime(DAY_FORMAT)
+            start_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
+            header = start_record[0]
+            ahour = start_record[1][header.index('ahour')]
+            ahour[start_day.hour] -= start_day.minute
+            database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
+            this_day = end_day.strftime(DAY_FORMAT)
+            end_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
+            ahour = end_record[1][header.index('ahour')]
+            ahour[end_day.hour] -= (60 - end_day.minute)
+            database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
+            return STD_OK
     else:
         app.logger.warning("Not supported method: {}".format(request.method))
 

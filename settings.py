@@ -16,3 +16,6 @@ STD_OK = {"message": 0, "data": ""}
 
 LEARN = 100
 REVIEW = 150
+
+DAY_FORMAT = "%Y-%m-%d"
+TIME_FORMAT = "%Y-%m-%d-%H-%M-%S"

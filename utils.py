@@ -16,13 +16,17 @@ def randID():
 
 
 def timestamp():
-    return time.strftime("%Y-%m-%d-%H-%M-%S")
+    return time.strftime(TIME_FORMAT)
 
 
-def today():
-    return time.strftime("%Y-%m-%d")
+# def today():
+#     return time.strftime("%Y-%m-%d")
 
 
-def yesterday():
-    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-    return yesterday.strftime("%Y-%m-%d")
+def today(d=0):
+    yesterday = datetime.datetime.now() + datetime.timedelta(days=d)
+    return yesterday.strftime(DAY_FORMAT)
+
+
+def sort_by_time(x, i, f):
+    return datetime.datetime.strptime(x[i], f).timestamp()
