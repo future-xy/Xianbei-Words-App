@@ -31,11 +31,12 @@ stream_handler = logging.StreamHandler(sys.stderr)
 stream_handler.setLevel(level)
 # 设置日志文件，和字符编码
 logging_format = logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+    '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s')
 file_handler.setFormatter(logging_format)
 stream_handler.setFormatter(logging_format)
 # app logger
 app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.DEBUG)
 # database logger
 db_logger = logging.getLogger('Database')
 db_logger.addHandler(file_handler)
@@ -82,8 +83,6 @@ def signup():
             # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
             database.INSERTvalues('USERS', (uid, value[0], value[3], None, value[2], value[1], 'U', None, None))
             return {'message': 0, 'data': uid}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -114,8 +113,6 @@ def signin():
                 app.logger.debug('Select data: {}'.format(data))
             index = [header.index(key.lower()) for key in keys]
             return {'message': 0, 'data': {keys[i]: data[index[i]] for i in range(len(keys))}}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -157,8 +154,6 @@ def hello(UID):
             "today review": review,
             "continuous": cont,
         }}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -190,8 +185,6 @@ def userInfo(UID):
         return {"message": 0, "data": {
             keys[i]: value[i] for i in range(len(keys))
         }}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -227,8 +220,6 @@ def updateUserPlan(UID):
                         app.logger.error("Unable to delete User {} from Plan".format(UID))
                     return STD_ERROR
             return STD_OK
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # test page
@@ -282,8 +273,6 @@ def getTest(UID, seed):
             "todayLearn": today_learn,
             "todayReview": today_review
         }}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -318,8 +307,6 @@ def updatePlan(UID):
                     app.logger.error("Unable to update Plan UID: {} TID: {} WID: {}".format(UID, tid, wid))
                     return STD_ERROR
             return STD_OK
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -437,8 +424,6 @@ def record(UID):
             'info': info,
             'Ahour': ahour.tolist()
         }}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
@@ -458,8 +443,6 @@ def feedback():
             app.logger.debug('Feedback: {} from {}'.format(info, uid))
             database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
         return STD_OK
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # @app.route('/post/<int:post_id>')
