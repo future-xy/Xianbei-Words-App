@@ -187,6 +187,16 @@ def userInfo(UID):
         }}
 
 
+@app.route('/plan', methods=['GET'])
+def plan():
+    if request.method == 'GET':
+        vocab = database.SELECTfromWHERE('VOCABULARY')
+        if vocab is False or len(vocab) < 2:
+            app.logger.error("Unable to find any vocabulary")
+            return STD_ERROR
+        return {"message": 0, "data": vocab[1:]}
+
+
 # Debug
 @app.route('/user/<UID>/plan', methods=['POST'])
 def updateUserPlan(UID):

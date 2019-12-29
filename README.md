@@ -221,13 +221,13 @@ return{
 ```
 {
 	"message":int
-	"data":{
-		"VID":""
-		"Vname":""
-		"Count":int
-		"Day":int
-		"Type":""
-	}
+	"data":[(
+		"VID"
+		"Vname"
+		"Count"
+		"Day"
+		"Type"
+	)]
 }
 ```
 
