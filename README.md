@@ -128,7 +128,7 @@ return{
 
 ### Information
 
-##### Get(./info/UID)
+##### Get(./record/UID)
 
 ```
 return{

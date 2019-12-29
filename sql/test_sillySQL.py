@@ -24,13 +24,13 @@ db_logger.info('123')
 
 db = sillySQL(logger=db_logger)
 db.bind()
-db.INSERTvalues('record',('1','2','2019',1,2,[1,2],[3.0,4.1],0))
-value=db.SELECTfromWHERE('record',{'SID':['1']})[1]
-db.DELETEprecise('record',{'SID':['1']})
-print(value)
-value[6][0]+=1
-db.INSERTvalues('record',value)
-db.release()
+# db.INSERTvalues('record', ('1', '2', '2019', 1, 2, [1, 2], [3.0, 4.1], 0))
+# value = db.SELECTfromWHERE('record', {'SID': ['1']})[1]
+# db.DELETEprecise('record', {'SID': ['1']})
+# print(value)
+# value[6][0] += 1
+# db.INSERTvalues('record', value)
+# db.release()
 # db.UPDATEprecise('VOCABULARY', 'COUNT', 3500, {"VID": ['0001']})
 # db.INSERTvalues('VOCABULARY',('0004','BEST',2000,365,'Primary'))
 # db.DELETEprecise('VOCABULARY', {"vid": ['0004']})

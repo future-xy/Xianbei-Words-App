@@ -341,51 +341,7 @@ def getWord(WID):
 
 
 # Debug
-@app.route('/info/<UID>', methods=['GET'])
-def getInfo(UID):
-    if request.method == 'GET':
-        data = database.SELECTfromWHERE('RECORD', {'UID': [UID]})
-        if data is False or len(data) < 2:
-            app.logger.error("Unable to find any record of User {}".format(UID))
-            return STD_ERROR
-        header = data[0]
-        data = data[1:]
-        sorted(data, key=lambda x: sort_by_time(x, header.index('dates'), DAY_FORMAT))
-        records = {sort_by_time(item, header.index('dates'), DAY_FORMAT): item for item in data}
-        days = 0
-        last_day = datetime.datetime.strptime(today(-6), DAY_FORMAT).timestamp()
-        for d in records:
-            if d <= last_day:
-                days = d
-        app.logger.debug(data)
-        info = []
-        ahour = np.zeros(24)
-        if days == 0:
-            info.append((0, 0, 0, 0))
-        else:
-            info.append(records[days][header.index('proficiency')][1:] +
-                        [float(sum(records[days][header.index('ahour')]))])
-            ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
-        for i in range(-5, 1):
-            days = datetime.datetime.strptime(today(i), DAY_FORMAT).timestamp()
-            if days in records:
-                info.append([records[days][header.index('proficiency')][1:]] +
-                            [float(sum(records[days][header.index('ahour')]))])
-                ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
-            else:
-                t = info[-1].copy()
-                t[3] = 0
-                info.append(t)
-        ahour /= 7
-        return {'message': 0, 'data': {
-            'info': info,
-            'Ahour': ahour.tolist()
-        }}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
-
-
-@app.route('/record/<UID>', methods=['POST'])
+@app.route('/record/<UID>', methods=['POST', 'GET'])
 def record(UID):
     if request.method == 'POST':
         try:
@@ -439,6 +395,48 @@ def record(UID):
             ahour[end_day.hour] -= (60 - end_day.minute)
             database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
             return STD_OK
+    elif request.method == 'GET':
+        data = database.SELECTfromWHERE('RECORD', {'UID': [UID]})
+        if data is False or len(data) < 2:
+            app.logger.error("Unable to find any record of User {}".format(UID))
+            return STD_ERROR
+        header = data[0]
+        data = data[1:]
+        data.sort(key=lambda x: sort_by_time(x, header.index('dates'), DAY_FORMAT))
+        records = {sort_by_time(item, header.index('dates'), DAY_FORMAT): item for item in data}
+        days = 0
+        last_day = datetime.datetime.strptime(today(-6), DAY_FORMAT).timestamp()
+        for d in records:
+            if d <= last_day:
+                days = d
+        app.logger.debug(data)
+        for line in data:
+            print(line)
+        info = []
+        ahour = np.zeros(24)
+        if days == 0:
+            info.append((0, 0, 0, 0))
+        elif days == last_day:
+            info.append(records[days][header.index('proficiency')][1:] +
+                        [float(sum(records[days][header.index('ahour')]))])
+            ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
+        else:
+            info.append(records[days][header.index('proficiency')][1:] + [0])
+        for i in range(-5, 1):
+            days = datetime.datetime.strptime(today(i), DAY_FORMAT).timestamp()
+            if days in records:
+                info.append(records[days][header.index('proficiency')][1:] +
+                            [float(sum(records[days][header.index('ahour')]))])
+                ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
+            else:
+                t = info[-1].copy()
+                t[3] = 0
+                info.append(t)
+        ahour /= 7
+        return {'message': 0, 'data': {
+            'info': info,
+            'Ahour': ahour.tolist()
+        }}
     else:
         app.logger.warning("Not supported method: {}".format(request.method))
 
@@ -462,25 +460,6 @@ def feedback():
         return STD_OK
     else:
         app.logger.warning("Not supported method: {}".format(request.method))
-
-
-@app.route("/test/<UID>", methods=['POST', 'GET'])
-def test(UID):
-    print(UID)
-    if request.method == 'POST':
-        # print(request.headers)
-        # print(request.json['data'])
-        # print(request.json['data']['username'])
-        # print(request.json['data']['password'])
-        # print(request.json['data']['phone'])
-        # print(request.form['data'])
-        return {"data": str(UID)}
-        # return "USER:{} pw:{} phone:{}".format(request.form['username'], request.form['password'],
-        #                                        request.form['phone'])
-    else:
-        # json.dump()
-        # d = json.encoder()
-        return {"data": str(UID)}
 
 
 # @app.route('/post/<int:post_id>')
