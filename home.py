@@ -128,7 +128,7 @@ def hello(UID):
             app.logger.error("The user({}) didn't choose any vocabulary!".format(UID))
             return STD_ERROR
         review = min(review, len(have_learned) - 1)
-        learn = max(learn, len(not_learned) - 1)
+        learn = min(learn, len(not_learned) - 1)
         t_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today()]})
         # 如果今天还没由背单词
         if len(t_record) == 1:
