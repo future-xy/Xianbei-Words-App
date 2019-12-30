@@ -30,3 +30,13 @@ def today(d=0):
 
 def sort_by_time(x, i, f):
     return datetime.datetime.strptime(x[i], f).timestamp()
+
+
+def ERROR(info=''):
+    return {'message': 1,
+            'data': info}
+
+
+def OK():
+    return {"message": 0,
+            'data': ''}

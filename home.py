@@ -57,6 +57,7 @@ def newID(table, name):
 # home page
 @app.route('/')
 def home():
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     return app.send_static_file('index.html')
 
 
@@ -64,20 +65,22 @@ def home():
 # login page
 @app.route('/signup', methods=['POST'])
 def signup():
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     keys = ['Uname', 'Pnumber', 'Mail', 'PW']
     if request.method == 'POST':
         try:
             form = request.json['data']
             value = [form[key] for key in keys]
         except KeyError as k:
-            app.logger.error("KeyError: {}".format(k.args[0]))
-            return STD_ERROR
+            error_message = "KeyError: {}".format(k.args[0])
+            app.logger.error(error_message)
+            return ERROR(error_message)
         else:
             app.logger.debug('Post: {}'.format(value))
             for i in range(1, len(value) - 1):
                 data = database.SELECTfromWHERE('USERS', {keys[i]: [value[i]]})
                 if len(data) > 1:
-                    return {'message': i, 'data': ''}
+                    return {'message': i, 'data': '{} conflict'.format(keys[i])}
             uid = newID('USERS', 'UID')
             app.logger.debug('New UID: {}'.format(uid))
             # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
@@ -88,6 +91,7 @@ def signup():
 # Debug
 @app.route('/signin', methods=['POST'])
 def signin():
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     types = ['UID', 'Pnumber', 'Mail']
     keys = ['Uname', 'Pnumber', 'Mail', 'UID']
     if request.method == 'POST':
@@ -98,19 +102,18 @@ def signin():
             info = form['info']
             pw = form['PW']
         except KeyError as k:
-            app.logger.error("KeyError: {}".format(k.args[0]))
-            return STD_ERROR
+            error_message = "KeyError: {}".format(k.args[0])
+            app.logger.error(error_message)
+            return ERROR(error_message)
         else:
             data = database.SELECTfromWHERE('USERS', {types[tp]: [info]})
             if len(data) != 2:
-                return STD_ERROR
+                return ERROR("Unable to find user")
             header = data[0]
             data = data[1]
             if data[header.index('pw')] != pw:
-                return STD_ERROR
-            if DEBUG:
-                app.logger.debug('Header: {}'.format(header))
-                app.logger.debug('Select data: {}'.format(data))
+                return ERROR("PW error")
+            app.logger.debug('Select data: {}'.format(data))
             index = [header.index(key.lower()) for key in keys]
             return {'message': 0, 'data': {keys[i]: data[index[i]] for i in range(len(keys))}}
 
@@ -119,14 +122,16 @@ def signin():
 # front page
 @app.route('/user/<UID>/overview', methods=['GET'])
 def hello(UID):
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     global REVIEW, LEARN
     review, learn = REVIEW, LEARN
     if request.method == 'GET':
         have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
         if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
-            app.logger.error("The user({}) didn't choose any vocabulary!".format(UID))
-            return STD_ERROR
+            error_message = "The user({}) didn't choose any vocabulary!".format(UID)
+            app.logger.error(error_message)
+            return ERROR(error_message)
         review = min(review, len(have_learned) - 1)
         learn = min(learn, len(not_learned) - 1)
         t_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today()]})
@@ -159,25 +164,30 @@ def hello(UID):
 # Debug
 @app.route('/user/<UID>/info', methods=['GET', 'POST'])
 def userInfo(UID):
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     keys = ['Uname', 'Avatar', 'Sex', 'Education', 'Grade']
     if request.method == 'POST':
         try:
             form = request.json['data']
             value = [form[key] for key in keys]
         except KeyError as k:
-            app.logger.error("KeyError: {}".format(k.args[0]))
-            return STD_ERROR
+            error_message = "KeyError: {}".format(k.args[0])
+            app.logger.error(error_message)
+            return ERROR(error_message)
         else:
             for i in range(len(keys)):
                 if not database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]}):
-                    app.logger.error("Unable to update USER {}, item={}, value={}".format(UID, keys[i], value[i]))
-                    return STD_ERROR
-            return STD_OK
+                    error_message = "Unable to update USER {}, item={}, value={}, i={}".format(UID, keys[i], value[i],
+                                                                                               i)
+                    app.logger.error(error_message)
+                    return ERROR(error_message)
+            return OK()
     elif request.method == 'GET':
         data = database.SELECTfromWHERE('USERS', {'UID': [UID]})
         if len(data) != 2:
-            app.logger.error("UID {} does not exist".format(UID))
-            return STD_ERROR
+            error_message = "UID {} does not exist".format(UID)
+            app.logger.error(error_message)
+            return ERROR(error_message)
         header = data[0]
         data = data[1]
         value = [data[header.index(key.lower())] for key in keys]
@@ -189,52 +199,63 @@ def userInfo(UID):
 
 @app.route('/plan', methods=['GET'])
 def plan():
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'GET':
         vocab = database.SELECTfromWHERE('VOCABULARY')
         if vocab is False or len(vocab) < 2:
-            app.logger.error("Unable to find any vocabulary")
-            return STD_ERROR
+            error_message = "Unable to find any vocabulary"
+            app.logger.error(error_message)
+            return ERROR(error_message)
         return {"message": 0, "data": vocab[1:]}
 
 
 # Debug
 @app.route('/user/<UID>/plan', methods=['POST'])
 def updateUserPlan(UID):
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'POST':
         try:
             vname = request.json['data']['Vname']
         except KeyError as k:
-            app.logger.error("KeyError: {}".format(k.args[0]))
-            return STD_ERROR
+            error_message = "KeyError: {}".format(k.args[0])
+            app.logger.error(error_message)
+            return ERROR(error_message)
         else:
             vocab = database.SELECTfromWHERE('VOCABULARY', {'Vname': [vname]})
             if vocab is False or len(vocab) != 2:
-                app.logger.error("Vocabulary {} does not exist".format(vname))
-                return STD_ERROR
+                error_message = "Vocabulary {} does not exist".format(vname)
+                app.logger.error(error_message)
+                return ERROR(error_message)
             vid = vocab[1][vocab[0].index('vid')]
             if not database.DELETEprecise('PLAN', {'UID': [UID]}):
-                app.logger.error("Unable to delete User {} from Plan".format(UID))
-                return STD_ERROR
+                error_message = "Unable to delete User {} from Plan".format(UID)
+                app.logger.error(error_message)
+                return ERROR(error_message)
             data = database.SELECTfromWHERE('TAKES', {'VID': [vid]})
             if data is False or len(data) < 2:
-                app.logger.error("Unable to find any takes of {}".format(vname))
-                return STD_ERROR
+                error_message = "Unable to find any takes of {}".format(vname)
+                app.logger.error(error_message)
+                return ERROR(error_message)
             header = data[0]
             words = data[1:]
             for word in words:
                 tid = word[header.index('tid')]
                 wid = word[header.index('wid')]
                 if not database.INSERTvalues('PLAN', (UID, tid, wid, 0)):
-                    app.logger.error("Unable to insert ({})".format((UID, tid, wid, 0)))
+                    error_message = "Unable to insert ({})".format((UID, tid, wid, 0))
+                    app.logger.error(error_message)
                     if not database.DELETEprecise('PLAN', {'UID': [UID]}):
-                        app.logger.error("Unable to delete User {} from Plan".format(UID))
-                    return STD_ERROR
-            return STD_OK
+                        error_message2 = "AND unable to delete User {} from Plan".format(UID)
+                        app.logger.error(error_message)
+                        error_message += ' ' + error_message2
+                    return ERROR(error_message)
+            return OK()
 
 
 # test page
 @app.route('/plan/<UID>/<seed>', methods=['GET'])
 def getTest(UID, seed):
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     random.seed(seed)
     global REVIEW, LEARN
     review, learn = REVIEW, LEARN
@@ -242,8 +263,9 @@ def getTest(UID, seed):
         have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
         if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
-            app.logger.error("The user({}) didn't choose any vocabulary!".format(UID))
-            return STD_ERROR
+            error_message = "The user({}) didn't choose any vocabulary!".format(UID)
+            app.logger.error()
+            return ERROR(error_message)
         header = have_learned[0]
         have_learned = have_learned[1:]
         not_learned = not_learned[1:]
@@ -288,11 +310,13 @@ def getTest(UID, seed):
 # Debug
 @app.route('/plan/<UID>', methods=['GET', 'POST'])
 def updatePlan(UID):
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'GET':
         user_plan = database.SELECTfromTwoTableWHERE('PLAN', 'DICTIONARY', {"UID": [UID]})
         if user_plan is False or len(user_plan) == 1:
-            app.logger.error("The user({}) didn't choose any vocabulary!".format(UID))
-            return STD_ERROR
+            error_message = "The user({}) didn't choose any vocabulary!".format(UID)
+            app.logger.error(error_message)
+            return ERROR(error_message)
         header = user_plan[0]
         data = user_plan[1:]
         plan = []
@@ -309,37 +333,40 @@ def updatePlan(UID):
         try:
             res = request.json['data']['result']
         except KeyError as k:
-            app.logger.error("KeyError: {}".format(k.args[0]))
-            return STD_ERROR
+            error_message = "KeyError: {}".format(k.args[0])
+            app.logger.error(error_message)
+            return ERROR(error_message)
         else:
             for tid, wid, p in res:
                 if not database.UPDATEprecise('PLAN', 'Proficiency', p, {'UID': [UID], 'TID': [tid], 'WID': [wid]}):
-                    app.logger.error("Unable to update Plan UID: {} TID: {} WID: {}".format(UID, tid, wid))
-                    return STD_ERROR
-            return STD_OK
+                    error_message = "Unable to update Plan UID: {} TID: {} WID: {}".format(UID, tid, wid)
+                    app.logger.error(error_message)
+                    return ERROR(error_message)
+            return OK()
 
 
 # Debug
 @app.route('/word/<WID>', methods=['GET'])
 def getWord(WID):
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'GET':
         keys = ['English', 'Chinese', 'Psymbol']
         data = database.SELECTfromWHERE('DICTIONARY', {'WID': [WID]})
         if data is False or len(data) != 2:
-            app.logger.error("Word {} not found.".format(WID))
-            return STD_ERROR
+            error_message = "Unable to find word {}.".format(WID)
+            app.logger.error(error_message)
+            return ERROR(error_message)
         header = data[0]
         data = data[1]
         return {"message": 0, "data": {
             key: data[header.index(key.lower())] for key in keys
         }}
-    else:
-        app.logger.warning("Not supported method: {}".format(request.method))
 
 
 # Debug
 @app.route('/record/<UID>', methods=['POST', 'GET'])
 def record(UID):
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'POST':
         try:
             form = request.json['data']
@@ -347,8 +374,9 @@ def record(UID):
             start = form['start']
             end = form['end']
         except KeyError as k:
-            app.logger.error("KeyError: {}".format(k.args[0]))
-            return STD_ERROR
+            error_message = "KeyError: {}".format(k.args[0])
+            app.logger.error(error_message)
+            return ERROR(error_message)
         else:
             start_day = datetime.datetime.strptime(start, TIME_FORMAT)
             now_day = start_day.replace(minute=0, second=0)
@@ -369,8 +397,9 @@ def record(UID):
                     for i in range(len(p)):
                         data = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [i]})
                         if data is False:
-                            app.logger.error("Unable to find Plan for User {}".format(UID))
-                            return STD_ERROR
+                            error_message = "Unable to find Plan for User {}".format(UID)
+                            app.logger.error(error_message)
+                            return ERROR(error_message)
                         p[i] = len(data) - 1
                     database.INSERTvalues('RECORD', (
                         newID('RECORD', 'SID'), UID, this_day, count, 0, p, ahour.tolist(), aday))
@@ -391,12 +420,13 @@ def record(UID):
             ahour = end_record[1][header.index('ahour')]
             ahour[end_day.hour] -= (60 - end_day.minute)
             database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
-            return STD_OK
+            return OK()
     elif request.method == 'GET':
         data = database.SELECTfromWHERE('RECORD', {'UID': [UID]})
         if data is False or len(data) < 2:
-            app.logger.error("Unable to find any record of User {}".format(UID))
-            return STD_ERROR
+            error_message = "Unable to find any record of User {}".format(UID)
+            app.logger.error(error_message)
+            return ERROR(error_message)
         header = data[0]
         data = data[1:]
         data.sort(key=lambda x: sort_by_time(x, header.index('dates'), DAY_FORMAT))
@@ -408,7 +438,7 @@ def record(UID):
                 days = d
         app.logger.debug(data)
         for line in data:
-            print(line)
+            app.logger.debug(line)
         info = []
         ahour = np.zeros(24)
         if days == 0:
@@ -439,20 +469,28 @@ def record(UID):
 # Debug
 @app.route('/feedback', methods=['POST'])
 def feedback():
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'POST':
         try:
             form = request.json['data']
             uid = form['UID']
             info = form['Info']
         except KeyError as k:
-            app.logger.error("KeyError: {}".format(k.args[0]))
-            return STD_ERROR
+            error_message = "KeyError: {}".format(k.args[0])
+            app.logger.error(error_message)
+            return ERROR(error_message)
         else:
             fid = newID('FEEDBACK', 'FID')
             app.logger.debug('New FID: {}'.format(fid))
             app.logger.debug('Feedback: {} from {}'.format(info, uid))
             database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
-        return STD_OK
+        return OK()
+
+
+@app.route('/test')
+def test():
+    app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    return OK()
 
 
 # @app.route('/post/<int:post_id>')
