@@ -11,8 +11,8 @@ DEBUG = True
 ID_LEN = 10
 ID_SPACE = string.ascii_letters + string.digits
 
-LEARN = 100
-REVIEW = 150
+LEARN = 10
+REVIEW = 15
 
 DAY_FORMAT = "%Y-%m-%d"
 TIME_FORMAT = "%Y-%m-%d-%H-%M-%S"
