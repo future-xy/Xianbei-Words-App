@@ -134,8 +134,8 @@ return{
 return{
 	"message":int				//success=0, fail=1
 	"data":{
-		"proficiencyInfo":[int,...],	//conuts of 0,1,2,...
-		"Forgetting curve":[item,...], //item=(x,y), or item=y is ok (optional)
+		"proficiencyInfo":[(int,...),...],	//conuts of 0,1,2,...
+		"Forgetting curve":[item,...], // item=y is ok (optional)
 		"active time":[(date,minute),...],		//(string,int)，过去7天
         	"Ahour":[],			//长度为24的整数数组，表示过去7天每个小时的平均活跃度,从0时刻开始					
 	}
