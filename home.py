@@ -256,7 +256,6 @@ def updateUserPlan(UID):
 @app.route('/plan/<UID>/<int:seed>', methods=['GET'])
 def getTest(UID, seed):
     app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-    print(type(seed))
     random.seed(seed)
     global REVIEW, LEARN
     review, learn = REVIEW, LEARN
@@ -265,43 +264,66 @@ def getTest(UID, seed):
         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
         if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
             error_message = "The user({}) didn't choose any vocabulary!".format(UID)
-            app.logger.error()
+            app.logger.error(error_message)
             return ERROR(error_message)
         header = have_learned[0]
         have_learned = have_learned[1:]
         not_learned = not_learned[1:]
         review = min(review, len(have_learned))
-        learn = max(learn, len(not_learned))
-        review_item = random.sample(have_learned, review)
-        learn_item = random.sample(not_learned, learn)
+        learn = min(learn, len(not_learned))
+        print(have_learned)
+        print(not_learned)
+        if len(have_learned) != 0:
+            review_item = random.sample(have_learned, review)
+        else:
+            app.logger.debug("User {} hasn't learner any word yet".format(UID))
+            review_item = []
+        if len(not_learned) != 0:
+            learn_item = random.sample(not_learned, learn)
+        else:
+            app.logger.debug("User {} doesn't have any new word to learn".format(UID))
+            learn_item = []
+        print("HERE")
         today_learn = []
         for item in learn_item:
-            ops = random.sample(have_learned + not_learned, 3)
-            if item in ops:
-                ops.append(random.choice(have_learned))
+            try:
+                ops = random.sample(have_learned + not_learned, 3)
+            except ValueError as v:
+                error_message = 'ValueError: {}'.format(v)
+                app.logger.error(error_message)
+                return ERROR(error_message)
             else:
-                ops.append(item)
-            options = [op[header.index('wid')] for op in ops]
-            random.shuffle(options)
-            today_learn.append((item[header.index('tid')],
-                                item[header.index('wid')],
-                                item[header.index('proficiency')],
-                                options
-                                ))
+                if item in ops:
+                    ops.append(random.choice(have_learned))
+                else:
+                    ops.append(item)
+                options = [op[header.index('wid')] for op in ops]
+                random.shuffle(options)
+                today_learn.append((item[header.index('tid')],
+                                    item[header.index('wid')],
+                                    item[header.index('proficiency')],
+                                    options
+                                    ))
         today_review = []
         for item in review_item:
-            ops = random.sample(have_learned + not_learned, 3)
-            if item in ops:
-                ops.append(random.choice(not_learned))
+            try:
+                ops = random.sample(have_learned + not_learned, 3)
+            except ValueError as v:
+                error_message = 'ValueError: {}'.format(v)
+                app.logger.error(error_message)
+                return ERROR(error_message)
             else:
-                ops.append(item)
-            options = [op[header.index('wid')] for op in ops]
-            random.shuffle(options)
-            today_review.append((item[header.index('tid')],
-                                 item[header.index('wid')],
-                                 item[header.index('proficiency')],
-                                 options
-                                 ))
+                if item in ops:
+                    ops.append(random.choice(not_learned))
+                else:
+                    ops.append(item)
+                options = [op[header.index('wid')] for op in ops]
+                random.shuffle(options)
+                today_review.append((item[header.index('tid')],
+                                     item[header.index('wid')],
+                                     item[header.index('proficiency')],
+                                     options
+                                     ))
         return {"message": 0, "data": {
             "todayLearn": today_learn,
             "todayReview": today_review
