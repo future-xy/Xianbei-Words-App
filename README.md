@@ -134,9 +134,13 @@ return{
 return{
 	"message":int				//success=0, fail=1
 	"data":{
-		"proficiencyInfo":[(int,...),...],	//conuts of 0,1,2,...
-		"Forgetting curve":[item,...], // item=y is ok (optional)
-		"active time":[(date,minute),...],		//(string,int)，过去7天
+		"proficiencyInfo":[
+			(int,int,int,int), 	//counts of p=0,1,2,3
+			...					//past 7 days
+			(int,int,int,int)
+			],
+		"Forgetting curve":[], 					//长度为7的实数数组，无物理意义 
+		"active time":[minute],		//(int)，过去7天每天在线(背单词)时长
         	"Ahour":[],			//长度为24的整数数组，表示过去7天每个小时的平均活跃度,从0时刻开始					
 	}
 }

@@ -393,9 +393,18 @@ def record(UID):
             start_day = datetime.datetime.strptime(start, TIME_FORMAT)
             now_day = start_day.replace(minute=0, second=0)
             end_day = datetime.datetime.strptime(end, TIME_FORMAT)
+            p = [0, 0, 0, 0]
+            for i in range(len(p)):
+                data = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [i]})
+                if data is False:
+                    error_message = "Unable to find Plan for User {}".format(UID)
+                    app.logger.error(error_message)
+                    return ERROR(error_message)
+                p[i] = len(data) - 1
             while now_day <= end_day:
                 this_day = now_day.strftime(DAY_FORMAT)
                 today_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
+                # record中没有这一天的记录
                 if today_record is False or len(today_record) < 2:
                     last_record = database.SELECTfromWHERE('RECORD', {
                         'Dates': [(now_day - datetime.timedelta(days=1)).strftime(DAY_FORMAT)],
@@ -404,20 +413,13 @@ def record(UID):
                         aday = 0
                     else:
                         aday = last_record[1][last_record[0].index('aday')] + 1
-                    p = [0, 0, 0, 0]
                     ahour = np.zeros(24).astype(np.float)
-                    for i in range(len(p)):
-                        data = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [i]})
-                        if data is False:
-                            error_message = "Unable to find Plan for User {}".format(UID)
-                            app.logger.error(error_message)
-                            return ERROR(error_message)
-                        p[i] = len(data) - 1
                     database.INSERTvalues('RECORD', (
                         newID('RECORD', 'SID'), UID, this_day, count, 0, p, ahour.tolist(), aday))
-
+                # 有这一天的记录
                 else:
                     ahour = np.array(today_record[1][today_record[0].index('ahour')])
+                    database.UPDATEprecise('RECORD', 'Proficiency', p, {'UID': [UID], 'Dates': [this_day]})
                 ahour[now_day.hour] = ahour[now_day.hour] + 60
                 database.UPDATEprecise('RECORD', 'Ahour', ahour.tolist(), {'UID': [UID], 'Dates': [this_day]})
                 now_day = now_day + datetime.timedelta(hours=1)
@@ -451,30 +453,28 @@ def record(UID):
         app.logger.debug(data)
         for line in data:
             app.logger.debug(line)
-        info = []
-        ahour = np.zeros(24)
+        p_info = []
+        a_time = []
         if days == 0:
-            info.append((0, 0, 0, 0))
-        elif days == last_day:
-            info.append(records[days][header.index('proficiency')][1:] +
-                        [float(sum(records[days][header.index('ahour')]))])
-            ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
+            p_info.append((0, 0, 0, 0))
         else:
-            info.append(records[days][header.index('proficiency')][1:] + [0])
-        for i in range(-5, 1):
+            p_info.append(records[days][header.index('proficiency')])
+        for i in range(-6, 1):
             days = datetime.datetime.strptime(today(i), DAY_FORMAT).timestamp()
             if days in records:
-                info.append(records[days][header.index('proficiency')][1:] +
-                            [float(sum(records[days][header.index('ahour')]))])
-                ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
+                p_info.append(records[days][header.index('proficiency')])
+                a_time.append(records[days][header.index('ahour')])
+                # ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
             else:
-                t = info[-1].copy()
-                t[3] = 0
-                info.append(t)
-        ahour /= 7
+                p_info.append(p_info[-1])
+                a_time.append(np.zeros(24))
+        a_time = np.array(a_time)
+        f_curve = np.random.normal(loc=5, size=7)
         return {'message': 0, 'data': {
-            'info': info,
-            'Ahour': ahour.tolist()
+            'proficiencyInfo': p_info[1:],
+            'Ahour': a_time.sum(axis=0).tolist(),
+            'Forgetting curve': f_curve.tolist(),
+            'active time': a_time.sum(axis=1).tolist()
         }}
 
 
