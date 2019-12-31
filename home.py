@@ -253,9 +253,10 @@ def updateUserPlan(UID):
 
 
 # test page
-@app.route('/plan/<UID>/<seed>', methods=['GET'])
+@app.route('/plan/<UID>/<int:seed>', methods=['GET'])
 def getTest(UID, seed):
     app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    print(type(seed))
     random.seed(seed)
     global REVIEW, LEARN
     review, learn = REVIEW, LEARN
