@@ -112,7 +112,8 @@ return{
 
 ```
 {
-	"count":int	//背的单词数量
+	"count_learned":int		//新背的单词数量
+	"count_reviewed":int	//复习的单词数量
 	//起止时间
 	"start":"2019-12-01-10-30-12"
 	"end":"2019-12-01-10-40-02"
