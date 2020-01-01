@@ -382,7 +382,8 @@ def record(UID):
     if request.method == 'POST':
         try:
             form = request.json['data']
-            count = form['count']
+            learned = form['count_learned']
+            reviewed = form['count_reviewed']
             start = form['start']
             end = form['end']
         except KeyError as k:
@@ -414,8 +415,9 @@ def record(UID):
                     else:
                         aday = last_record[1][last_record[0].index('aday')] + 1
                     ahour = np.zeros(24).astype(np.float)
+                    # need to modify after db
                     database.INSERTvalues('RECORD', (
-                        newID('RECORD', 'SID'), UID, this_day, count, 0, p, ahour.tolist(), aday))
+                        newID('RECORD', 'SID'), UID, this_day, 0, 0, p, ahour.tolist(), aday))
                 # 有这一天的记录
                 else:
                     ahour = np.array(today_record[1][today_record[0].index('ahour')])
