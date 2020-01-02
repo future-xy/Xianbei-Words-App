@@ -25,8 +25,8 @@ db_logger.info('123')
 db = sillySQL(logger=db_logger)
 db.bind()
 
-print(db.SELECTfromWHERE('vocabulary'))
-print(db.SELECTfromWHERE('TAKES'))
+# print(db.SELECTfromWHERE('vocabulary'))
+print(db.SELECTfromWHERE('record'))
 # db.INSERTvalues('vocabulary',('0004','CET4',100,100,'大学四级'))
 # db.INSERTvalues('dictionary',(
 #         '0006','abandon', '[əˈbændən]', ['vt.  放弃，抛弃； 离弃，丢弃； 使屈从； 停止进行，终止', 'n.  放任，放纵； 完全屈从于压制；'])

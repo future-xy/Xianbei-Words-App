@@ -305,6 +305,8 @@ Indexes:
 | proficiency | integer[]             | |
 | ahour       | numeric(10,3)[]               | |
 | aday        | integer               | |
+| learned     | integer               | |
+| review      | integer               | |
 Indexes:
     "record_pkey" PRIMARY KEY, btree (sid)
 
@@ -325,7 +327,7 @@ Indexes:
 | uid       | character varying(32)  | not null|
 | uname     | character varying(64)  | not null|
 | pw        | character varying(64)  | not null|
-| avatar    | character varying(256) | |
+| avatar    | character varying(4194304) | |
 | mail      | character varying(64)  | |
 | pnumber   | character varying(32)  | |
 | sex       | character(1)           | |
