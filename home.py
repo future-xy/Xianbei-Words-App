@@ -145,6 +145,10 @@ def hello(UID):
                 cont = y_record[1][y_record[0].index('aday')]
         else:
             cont = t_record[1][t_record[0].index('aday')]
+            today_learned = t_record[1][t_record[0].index('learned')]
+            today_reviewed = t_record[1][t_record[0].index('review')]
+            learn = max(0, learn - today_learned)
+            review = max(0, review - today_reviewed)
         if len(not_learned) > 1:
             tid = not_learned[1][not_learned[0].index('tid')]
         else:
@@ -415,9 +419,8 @@ def record(UID):
                     else:
                         aday = last_record[1][last_record[0].index('aday')] + 1
                     ahour = np.zeros(24).astype(np.float)
-                    # need to modify after db
                     database.INSERTvalues('RECORD', (
-                        newID('RECORD', 'SID'), UID, this_day, 0, 0, p, ahour.tolist(), aday))
+                        newID('RECORD', 'SID'), UID, this_day, learned, reviewed, 0, 0, p, ahour.tolist(), aday))
                 # 有这一天的记录
                 else:
                     ahour = np.array(today_record[1][today_record[0].index('ahour')])
@@ -452,7 +455,6 @@ def record(UID):
         for d in records:
             if d <= last_day:
                 days = d
-        app.logger.debug(data)
         for line in data:
             app.logger.debug(line)
         p_info = []
