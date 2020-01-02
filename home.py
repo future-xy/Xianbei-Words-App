@@ -423,7 +423,7 @@ def record(UID):
                         newID('RECORD', 'SID'), UID, this_day, learned, reviewed, 0, 0, p, ahour.tolist(), aday))
                 # 有这一天的记录
                 else:
-                    ahour = np.array(today_record[1][today_record[0].index('ahour')])
+                    ahour = np.array(today_record[1][today_record[0].index('ahour')], dtype=np.float)
                     database.UPDATEprecise('RECORD', 'Proficiency', p, {'UID': [UID], 'Dates': [this_day]})
                 ahour[now_day.hour] = ahour[now_day.hour] + 60
                 database.UPDATEprecise('RECORD', 'Ahour', ahour.tolist(), {'UID': [UID], 'Dates': [this_day]})
@@ -472,7 +472,7 @@ def record(UID):
             else:
                 p_info.append(p_info[-1])
                 a_time.append(np.zeros(24))
-        a_time = np.array(a_time)
+        a_time = np.array(a_time, dtype=np.float)
         f_curve = np.random.normal(loc=5, size=7)
         return {'message': 0, 'data': {
             'proficiencyInfo': p_info[1:],
