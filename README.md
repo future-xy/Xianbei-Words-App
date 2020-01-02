@@ -300,6 +300,8 @@ Indexes:
 | sid         | character varying(32) | not null|
 | uid         | character varying(32) | not null|
 | dates       | character varying(32) | not null|
+| learned     | integer               | |
+| review      | integer               | |
 | count       | integer               | not null|
 | score       | integer               | not null|
 | proficiency | integer[]             | |
@@ -325,7 +327,7 @@ Indexes:
 | uid       | character varying(32)  | not null|
 | uname     | character varying(64)  | not null|
 | pw        | character varying(64)  | not null|
-| avatar    | character varying(256) | |
+| avatar    | character varying(4194304) | |
 | mail      | character varying(64)  | |
 | pnumber   | character varying(32)  | |
 | sex       | character(1)           | |
