@@ -300,13 +300,13 @@ Indexes:
 | sid         | character varying(32) | not null|
 | uid         | character varying(32) | not null|
 | dates       | character varying(32) | not null|
+| learned     | integer               | |
+| review      | integer               | |
 | count       | integer               | not null|
 | score       | integer               | not null|
 | proficiency | integer[]             | |
 | ahour       | numeric(10,3)[]               | |
 | aday        | integer               | |
-| learned     | integer               | |
-| review      | integer               | |
 Indexes:
     "record_pkey" PRIMARY KEY, btree (sid)
 

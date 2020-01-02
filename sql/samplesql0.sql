@@ -75,6 +75,8 @@ CREATE TABLE RECORD(
 	SID VARCHAR(32) PRIMARY KEY NOT NULL,
 	UID VARCHAR(32) NOT NULL,
 	Dates VARCHAR(32) NOT NULL,
+	Learned int not null,
+	review int not null,
 	Count INT NOT NULL,
 	Score int NOT NULL,
 	Proficiency int[4],
@@ -99,3 +101,29 @@ CREATE TABLE FEEDBACK(
 insert into FEEDBACK VALUES
 ('0001',	'0001',	'2019-12-10',	'OMG! I''v never seen such perfect APP!'),
 ('0002',	'0002',	'2019-12-13',	'Why didn''t I find such great software earlier!!!');
+
+
+
+
+
+
+-------------------------------------------
+select * from pg_stat_activity where state='active';
+select pg_cancel_backend(27517);
+alter table tb101 alter id type varchar;
+
+SELECT 
+    pg_terminate_backend(pid) 
+FROM 
+    pg_stat_activity 
+WHERE 
+    -- don't kill my own connection!
+    pid <> pg_backend_pid()
+    -- don't kill the connections to other databases
+    AND datname = 'database_name'
+
+
+CREATE TABLE RECORD as(
+	select SID, UID, Dates,Learned,review, count,score, Proficiency,ahour, Aday
+	from record_old
+);
