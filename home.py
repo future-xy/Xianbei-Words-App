@@ -179,6 +179,10 @@ def userInfo(UID):
             app.logger.error(error_message)
             return ERROR(error_message)
         else:
+            if value[keys.index('Grade')] is '':
+                value[keys.index('Grade')] = None
+            else:
+                value[keys.index('Grade')] = int(value[keys.index('Grade')])
             for i in range(len(keys)):
                 if not database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]}):
                     error_message = "Unable to update USER {}, item={}, value={}, i={}".format(UID, keys[i], value[i],
