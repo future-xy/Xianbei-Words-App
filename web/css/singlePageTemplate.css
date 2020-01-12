@@ -45,10 +45,10 @@ nav {
 header nav ul {
     list-style: none;
     float: right;
-    width: 40%;
+    width: 100%;
 }
 nav ul li {
-	float: left;
+	float: right;
 	color: #FFFFFF;
 	font-size: 14px;
 	text-align: left;
