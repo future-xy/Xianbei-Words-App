@@ -36,17 +36,19 @@ header {
 	letter-spacing: 4px;
 }
 nav {
-	float: right;
-	width: 50%;
-	text-align: right;
-	margin-right: 25px;
+    float: right;
+    width: 50%;
+    text-align: right;
+    margin-right: 25px;
+	list-style: none;
 }
 header nav ul {
-	list-style: none;
-	float: right;
+    list-style: none;
+    float: right;
+    width: 100%;
 }
 nav ul li {
-	float: left;
+	float: right;
 	color: #FFFFFF;
 	font-size: 14px;
 	text-align: left;
@@ -54,6 +56,7 @@ nav ul li {
 	letter-spacing: 2px;
 	font-weight: bold;
 	transition: all 0.3s linear;
+	width: auto;
 }
 ul li a {
 	color: #FFFFFF;
