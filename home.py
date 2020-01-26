@@ -13,7 +13,7 @@ from flask import request
 
 import numpy as np
 
-from sql.sillySQL import sillySQL
+# from sql.sillySQL import sillySQL
 from utils import *
 from settings import *
 
