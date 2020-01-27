@@ -1,24 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Name    : testpg.py
+# Name    : models.py
 # Time    : 2020/1/23 20:35
 # Author  : Fu Yao
 # Mail    : fy38607203@163.com
 
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+# from flask import Flask
+# from flask_sqlalchemy import SQLAlchemy
+from app import db, login_manager
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, DateTime, Text, Enum
 from sqlalchemy.dialects.postgresql import ARRAY
 
 DB_URL = 'postgresql+psycopg2://postgres:sysu_sdcs_db2019@111.231.250.160:5432/database0'
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
-app.config['SQLALCHEMY_ECHO'] = False
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+# app = Flask(__name__)
+# app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
+# app.config['SQLALCHEMY_ECHO'] = False
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# db = SQLAlchemy(app)
 MAX_LEN = 65535
 
 
@@ -161,25 +162,25 @@ class Feedback(db.Model):
         return "<Feedback('{}','{}','{}','{}')>".format(self.fid, self.uid, self.dates, self.info)
 
 
-@app.route('/')
-def test():
-    u = db.session.query(Users).all()
-    print("Users", u[0])
-    d = db.session.query(Dictionary).all()
-    print("Dictionary", d[0])
-    v = db.session.query(Vocabulary).all()
-    print("Vocabulary", v[0])
-    t = db.session.query(Takes).all()
-    print("Takes", t[0])
-    f = db.session.query(Feedback).all()
-    print("Feedback", f[0])
-    r = db.session.query(Record).all()
-    print("Record", r[0])
-    p = db.session.query(Plan).all()
-    print("Plan", p[0])
+# @app.route('/')
+# def test():
+#     u = db.session.query(Users).all()
+#     print("Users", u[0])
+#     d = db.session.query(Dictionary).all()
+#     print("Dictionary", d[0])
+#     v = db.session.query(Vocabulary).all()
+#     print("Vocabulary", v[0])
+#     t = db.session.query(Takes).all()
+#     print("Takes", t[0])
+#     f = db.session.query(Feedback).all()
+#     print("Feedback", f[0])
+#     r = db.session.query(Record).all()
+#     print("Record", r[0])
+#     p = db.session.query(Plan).all()
+#     print("Plan", p[0])
+#
+#     return {}
 
-    return {}
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9102, debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=9102, debug=True)

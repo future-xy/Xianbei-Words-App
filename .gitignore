@@ -3,4 +3,5 @@
 /test.py
 web/apk/TeamViewer.apk
 ~$Demo.xlsx
-sql/app.log
+.idea
+__pycache__/

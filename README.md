@@ -1,7 +1,7 @@
 # Database Final Project_server
-This a the server end of the final database project
+This a the server end of the XIANBEIDANCI App
 
-###### NOTE: This is not the formal API. You should not trust theses APIs yet.
+<font color=red size=10>We are refactoring the backend architecture. During the process of refactoring, the App may not work properly. Don't worry, this will ~~NOT~~ last too long.</font>
 
 # API Command
 
