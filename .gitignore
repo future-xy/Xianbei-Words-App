@@ -1,5 +1,5 @@
 .env
-/app.log
+*.log
 /test.py
 web/apk/TeamViewer.apk
 ~$Demo.xlsx
