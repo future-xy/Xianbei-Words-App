@@ -34,8 +34,11 @@ def create_app(config_name):
     # log settings
     app.logger = logging.getLogger('App')
     app.logger.setLevel(logging.DEBUG)
+    app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/critical.log'), logging.CRITICAL))
     app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/error.log'), logging.ERROR))
+    app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/warning.log'), logging.WARNING))
     app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/info.log'), logging.INFO))
+    app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/debug.log'), logging.DEBUG))
 
     from .client import client as client_blueprint
     app.register_blueprint(client_blueprint)
