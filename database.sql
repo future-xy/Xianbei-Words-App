@@ -4,19 +4,19 @@ CREATE TABLE USERS(
 	UID VARCHAR(32) PRIMARY KEY NOT NULL,
 	Uname VARCHAR(64) NOT NULL,
 	PW VARCHAR(64) NOT NULL,
-	Avatar VARCHAR(256),
-	Mail VARCHAR(64),
-	Pnumber VARCHAR(32),
-	Sex CHAR(1),
-	Education VARCHAR(32),
-	Grade int
+	Avatar VARCHAR(4194304) NOT NULL,
+	Mail VARCHAR(64) NOT NULL,
+	Pnumber VARCHAR(32) NOT NULL,
+	Sex CHAR(1) NOT NULL,
+	Education VARCHAR(32) NOT NULL,
+	Grade int NOT NULL
 );
 -- USER IS NOT an available table name???
 
 insert into users(UID,Uname,PW,Avatar,Mail,Pnumber,Sex,Education,Grade) VALUES
-('0001'	,	'LM'	,	'123456'	,	Null,'LM@123.com','13900008888',	'M','Undergraduate',3),
-('0002'	,	'WM'	,	'123456'	,	Null,'WM@123.com','18900006666',	'F','Senior',	2),
-('0003'	,	'LW'	,	'123456'	,	Null,'LW@123.com','13800007777',	NULL,'Undergraduate',1);
+('0001'	,	'LM'	,	'123456'	,	'','LM@123.com','13900008888',	'M','Undergraduate',3),
+('0002'	,	'WM'	,	'123456'	,	'','WM@123.com','18900006666',	'F','Senior',	2),
+('0003'	,	'LW'	,	'123456'	,	'','LW@123.com','13800007777',	'U','Undergraduate',1);
 -- TRUE IS MALE, FALSE IS FEMALE
 CREATE TABLE DICTIONARY(
 	WID VARCHAR(32) PRIMARY KEY NOT NULL,

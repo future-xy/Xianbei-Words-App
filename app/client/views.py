@@ -14,26 +14,58 @@ from models import Users, Vocabulary, Dictionary, Feedback, Plan, Record, Takes
 from flask_login import current_user, login_user, login_required
 
 import random
+from datetime import datetime, date
+import numpy as np
 
 
 @client.route('/test')
 def test():
     print("RUNNING!")
-    info = "LOG INFO"
-    current_app.logger.debug(info)
-    current_app.logger.info(info)
-    current_app.logger.warning(info)
-    current_app.logger.error(info)
-    current_app.logger.critical(info)
+    # print("_______________________________")
+    # user = Users(uname='test1', pw='123456', mail='1@1', pnumber='123')
+    # db.session.add(user)
+    # print("Input: {}".format(user))
+    # print("Output: {}".format(db.session.query(Users).all()))
+    # print("_______________________________")
+    # print("Output: {}".format(db.session.query(Dictionary).all()))
+    # print("_______________________________")
+    # print("Output: {}".format(db.session.query(Vocabulary).all()))
+    # print("_______________________________")
+    # take = Takes(vid='0001', wid='0001')
+    # print("Input: {}".format(take))
+    # db.session.add(take)
+    # print("Output: {}".format(db.session.query(Takes).all()))
+    # print("_______________________________")
+    # plan1 = Plan(uid='0001', tid='0001', proficiency=1, dates=datetime.now())
+    # print("Input: {}".format(plan1))
+    # p2 = Plan(uid='0001', tid='0002')
+    # print("Input: {}".format(p2))
+    # db.session.add(plan1)
+    # db.session.add(p2)
+    # print("Output: {}".format(db.session.query(Plan).all()))
+    # print("_______________________________")
+    # r1 = Record(uid='0001', learned=1, reviewed=2, proficiency=[1, 0, 0, 0], ahour=np.zeros(24).tolist(), aday=2)
+    # r2 = Record(uid='0002', learned=2, reviewed=2, proficiency=[1, 0, 0, 0], ahour=np.ones(24).tolist(), aday=2)
+    # print("Input: {}".format(r1))
+    # print("Input: {}".format(r2))
+    # db.session.add(r1)
+    # db.session.add(r2)
+    # print("Output: {}".format(db.session.query(Record).all()))
+    # print("_______________________________")
+    # f1 = Feedback(uid='0002', info='hi')
+    # print("Input: {}".format(f1))
+    # db.session.add(f1)
+    # print("Output: {}".format(db.session.query(Feedback).all()))
+
     return "HELLO WORLD"
 
 
-#
 # home page
 @client.route('/')
 def home():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     return render_template('index.html')
+
 #
 #
 # # Debug
