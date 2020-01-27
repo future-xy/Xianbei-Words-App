@@ -8,7 +8,7 @@
 from app import db
 from . import client
 
-from flask import request, current_app
+from flask import request, current_app, send_file, render_template
 
 from models import Users, Vocabulary, Dictionary, Feedback, Plan, Record, Takes
 from flask_login import current_user, login_user, login_required
@@ -26,12 +26,14 @@ def test():
     current_app.logger.error(info)
     current_app.logger.critical(info)
     return "HELLO WORLD"
+
+
 #
-# # home page
-# @client.route('/')
-# def home():
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     return client.send_static_file('index.html')
+# home page
+@client.route('/')
+def home():
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    return render_template('index.html')
 #
 #
 # # Debug

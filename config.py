@@ -27,7 +27,7 @@ class Config:
     #
     # Basic path
     BASE_DIR = Path(os.path.abspath('.'))
-    WEB_ROOT = BASE_DIR / 'html'
+    # WEB_ROOT = BASE_DIR / ''
 
     # Database settings
     SQLALCHEMY_RECORD_QUERIES = True
