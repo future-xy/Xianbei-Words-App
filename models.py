@@ -26,10 +26,12 @@ class Users(db.Model):
     sex = Column("sex", CHAR, nullable=False, default='U')
     education = Column("education", String(32), nullable=False, default='')
     grade = Column("grade", Integer, nullable=False, default=0)
+    vid = Column("vid", String(32), ForeignKey('vocabulary.vid'), nullable=True)
 
     def __repr__(self):
-        return "<Users('{}','{}','{}','{}','{}','{}','{}','{}','{}')>".format(
-            self.uid, self.uname, self.pw, self.avatar, self.mail, self.pnumber, self.sex, self.education, self.grade)
+        return "<Users('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}')>".format(
+            self.uid, self.uname, self.pw, self.avatar, self.mail, self.pnumber, self.sex, self.education, self.grade,
+            self.vid)
 
 
 class Dictionary(db.Model):

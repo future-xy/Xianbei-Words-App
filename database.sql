@@ -60,16 +60,16 @@ insert into TAKES VALUES
 CREATE TABLE PLAN(
 	UID VARCHAR(32)	,
 	TID VARCHAR(32)	,
-	WID VARCHAR(32)	NOT NULL,
-	Proficiency int,
+	Proficiency int NOT NULL,
+	dates DATE,
 	PRIMARY KEY(UID, TID)
 );
 insert into PLAN VALUES
-('0001',	'0001',	'0003',	100),
-('0001',	'0002',	'0004',	0),
-('0002',	'0004',	'0001',	99),
-('0002',	'0005',	'0002',	99),
-('0003',	'0003',	'0005',	23);
+('0001',	'0001',	0,'2020-01-01'),
+('0001',	'0002',	1,'2020-01-02'),
+('0002',	'0004',	0,'2020-01-04'),
+('0002',	'0005',	1,'2020-01-05'),
+('0003',	'0003',	0,'2020-01-03');
 
 CREATE TABLE RECORD(
 	SID VARCHAR(32) PRIMARY KEY NOT NULL,

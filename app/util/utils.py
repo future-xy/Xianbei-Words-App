@@ -10,14 +10,16 @@ import random
 import time
 import datetime
 
+from flask import current_app, request
+
 
 def newID(prefix='', length=ID_LEN):
     l = length - 1 - len(prefix)
     return prefix + '_' + ''.join(random.sample(ID_SPACE, l))
 
 
-def timestamp():
-    return time.strftime(TIME_FORMAT)
+# def timestamp():
+#     return time.strftime(TIME_FORMAT)
 
 
 # def today():

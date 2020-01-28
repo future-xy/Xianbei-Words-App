@@ -38,6 +38,8 @@ def create_app(config_name):
     app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/warning.log'), logging.WARNING))
     app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/info.log'), logging.INFO))
     app.logger.addHandler(logger_init(os.path.join(app.config.get('BASE_DIR'), 'logs/debug.log'), logging.DEBUG))
+    # screen log
+
 
     from .client import client as client_blueprint
     app.register_blueprint(client_blueprint)

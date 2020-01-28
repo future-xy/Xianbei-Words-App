@@ -7,15 +7,19 @@
 
 from app import db
 from . import client
-
-from flask import request, current_app, send_file, render_template
-
+from app.util.utils import OK, ERROR
+from config import REVIEW, LEARN
 from models import Users, Vocabulary, Dictionary, Feedback, Plan, Record, Takes
+
+from flask import request, current_app, render_template
 from flask_login import current_user, login_user, login_required
+from sqlalchemy.sql import exists
+from sqlalchemy import or_, func
 
 import random
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import numpy as np
+from time import time
 
 
 @client.route('/test')
@@ -56,7 +60,14 @@ def test():
     # print("Input: {}".format(f1))
     # db.session.add(f1)
     # print("Output: {}".format(db.session.query(Feedback).all()))
-
+    # do = db.session.query(Record.dates).filter(
+    #     and_(Record.uid == '0001', Record.dates == date.today() - timedelta(58))).scalar()
+    # print(type(do))
+    # print(do)
+    # have_learned = db.session.query(func.count(Plan.tid)).filter(Plan.uid == '0001', Plan.proficiency == 0).scalar()
+    # print(have_learned)
+    # db.session.query(Users).filter(Users.uid == '0001').update({'uname': 'hahahaha'})
+    print(db.session.query(Users).all())
     return "HELLO WORLD"
 
 
@@ -66,213 +77,181 @@ def home():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     return render_template('index.html')
 
-#
-#
-# # Debug
-# # login page
-# @client.route('/signup', methods=['POST'])
-# def signup():
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     keys = ['Uname', 'Pnumber', 'Mail', 'PW']
-#     if request.method == 'POST':
-#         try:
-#             form = request.json['data']
-#             value = [form[key] for key in keys]
-#         except KeyError as k:
-#             error_message = "KeyError: {}".format(k.args[0])
-#             client.logger.error(error_message)
-#             return ERROR(error_message)
-#         else:
-#             client.logger.debug('Post: {}'.format(value))
-#             for i in range(1, len(value) - 1):
-#                 data = database.SELECTfromWHERE('USERS', {keys[i]: [value[i]]})
-#                 if len(data) > 1:
-#                     return {'message': i, 'data': '{} conflict'.format(keys[i])}
-#             uid = newID('USERS', 'UID')
-#             client.logger.debug('New UID: {}'.format(uid))
-#             # uid,uname,pw,avatar,mail,pnumber,sex,education,garde
-#             database.INSERTvalues('USERS', (uid, value[0], value[3], None, value[2], value[1], 'U', None, None))
-#             return {'message': 0, 'data': uid}
-#
-#
-# # Debug
-# @client.route('/signin', methods=['POST'])
-# def signin():
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     types = ['UID', 'Pnumber', 'Mail']
-#     keys = ['Uname', 'Pnumber', 'Mail', 'UID']
-#     if request.method == 'POST':
-#         try:
-#             form = request.json['data']
-#             client.logger.debug('Post: {}'.format(form))
-#             tp = form['type']
-#             info = form['info']
-#             pw = form['PW']
-#         except KeyError as k:
-#             error_message = "KeyError: {}".format(k.args[0])
-#             client.logger.error(error_message)
-#             return ERROR(error_message)
-#         else:
-#             data = database.SELECTfromWHERE('USERS', {types[tp]: [info]})
-#             if len(data) != 2:
-#                 return ERROR("Unable to find user")
-#             header = data[0]
-#             data = data[1]
-#             if data[header.index('pw')] != pw:
-#                 return ERROR("PW error")
-#             client.logger.debug('Select data: {}'.format(data))
-#             index = [header.index(key.lower()) for key in keys]
-#             return {'message': 0, 'data': {keys[i]: data[index[i]] for i in range(len(keys))}}
-#
-#
-# # Debug
-# # front page
-# @client.route('/user/<UID>/overview', methods=['GET'])
-# def hello(UID):
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     global REVIEW, LEARN
-#     review, learn = REVIEW, LEARN
-#     if request.method == 'GET':
-#         have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
-#         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
-#         if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
-#             error_message = "The user({}) didn't choose any vocabulary!".format(UID)
-#             client.logger.error(error_message)
-#             return ERROR(error_message)
-#         review = min(review, len(have_learned) - 1)
-#         learn = min(learn, len(not_learned) - 1)
-#         t_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today()]})
-#         # 如果今天还没由背单词
-#         if len(t_record) == 1:
-#             y_record = database.SELECTfromWHERE('RECORD', {'UID': [UID], 'Dates': [today(-1)]})
-#             # 如果昨天没有背单词
-#             if len(y_record) == 1:
-#                 cont = 0
-#             else:
-#                 cont = y_record[1][y_record[0].index('aday')]
-#         else:
-#             cont = t_record[1][t_record[0].index('aday')]
-#             today_learned = t_record[1][t_record[0].index('learned')]
-#             today_reviewed = t_record[1][t_record[0].index('review')]
-#             learn = max(0, learn - today_learned)
-#             review = max(0, review - today_reviewed)
-#         if len(not_learned) > 1:
-#             tid = not_learned[1][not_learned[0].index('tid')]
-#         else:
-#             tid = have_learned[1][have_learned[0].index('tid')]
-#         data = database.SELECTfromTwoTableWHERE('VOCABULARY', 'TAKES', {'TID': [tid]})
-#         vname = data[1][data[0].index('vname')]
-#         return {"message": 0, "data": {
-#             "Vname": vname,
-#             "alreadyRecite": len(have_learned) - 1,
-#             "remained": len(not_learned) - 1,
-#             "today learn": learn,
-#             "today review": review,
-#             "continuous": cont,
-#         }}
-#
-#
-# # Debug
-# @client.route('/user/<UID>/info', methods=['GET', 'POST'])
-# def userInfo(UID):
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     keys = ['Uname', 'Avatar', 'Sex', 'Education', 'Grade']
-#     if request.method == 'POST':
-#         try:
-#             form = request.json['data']
-#             value = [form[key] for key in keys]
-#         except KeyError as k:
-#             error_message = "KeyError: {}".format(k.args[0])
-#             client.logger.error(error_message)
-#             return ERROR(error_message)
-#         else:
-#             if value[keys.index('Grade')] is '':
-#                 value[keys.index('Grade')] = None
-#             else:
-#                 value[keys.index('Grade')] = int(value[keys.index('Grade')])
-#             for i in range(len(keys)):
-#                 if not database.UPDATEprecise('USERS', keys[i], value[i], {"UID": [UID]}):
-#                     error_message = "Unable to update USER {}, item={}, value={}, i={}".format(UID, keys[i], value[i],
-#                                                                                                i)
-#                     client.logger.error(error_message)
-#                     return ERROR(error_message)
-#             return OK()
-#     elif request.method == 'GET':
-#         data = database.SELECTfromWHERE('USERS', {'UID': [UID]})
-#         if len(data) != 2:
-#             error_message = "UID {} does not exist".format(UID)
-#             client.logger.error(error_message)
-#             return ERROR(error_message)
-#         header = data[0]
-#         data = data[1]
-#         value = [data[header.index(key.lower())] for key in keys]
-#         value = [v if v != None else '' for v in value]
-#         return {"message": 0, "data": {
-#             keys[i]: value[i] for i in range(len(keys))
-#         }}
-#
-#
-# # Debug
-# @client.route('/plan', methods=['GET'])
-# def plan():
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     if request.method == 'GET':
-#         vocab = database.SELECTfromWHERE('VOCABULARY')
-#         if vocab is False or len(vocab) < 2:
-#             error_message = "Unable to find any vocabulary"
-#             client.logger.error(error_message)
-#             return ERROR(error_message)
-#         return {"message": 0, "data": vocab[1:]}
-#
-#
-# # Debug
-# @client.route('/user/<UID>/plan', methods=['POST'])
-# def updateUserPlan(UID):
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     if request.method == 'POST':
-#         try:
-#             vname = request.json['data']['Vname']
-#         except KeyError as k:
-#             error_message = "KeyError: {}".format(k.args[0])
-#             client.logger.error(error_message)
-#             return ERROR(error_message)
-#         else:
-#             vocab = database.SELECTfromWHERE('VOCABULARY', {'Vname': [vname]})
-#             if vocab is False or len(vocab) != 2:
-#                 error_message = "Vocabulary {} does not exist".format(vname)
-#                 client.logger.error(error_message)
-#                 return ERROR(error_message)
-#             vid = vocab[1][vocab[0].index('vid')]
-#             if not database.DELETEprecise('PLAN', {'UID': [UID]}):
-#                 error_message = "Unable to delete User {} from Plan".format(UID)
-#                 client.logger.error(error_message)
-#                 return ERROR(error_message)
-#             data = database.SELECTfromWHERE('TAKES', {'VID': [vid]})
-#             if data is False or len(data) < 2:
-#                 error_message = "Unable to find any takes of {}".format(vname)
-#                 client.logger.error(error_message)
-#                 return ERROR(error_message)
-#             header = data[0]
-#             words = data[1:]
-#             for word in words:
-#                 tid = word[header.index('tid')]
-#                 wid = word[header.index('wid')]
-#                 if not database.INSERTvalues('PLAN', (UID, tid, wid, 0)):
-#                     error_message = "Unable to insert ({})".format((UID, tid, wid, 0))
-#                     client.logger.error(error_message)
-#                     if not database.DELETEprecise('PLAN', {'UID': [UID]}):
-#                         error_message2 = "AND unable to delete User {} from Plan".format(UID)
-#                         client.logger.error(error_message)
-#                         error_message += ' ' + error_message2
-#                     return ERROR(error_message)
-#             return OK()
-#
-#
+
+# Debug
+# login page
+@client.route('/signup', methods=['POST'])
+def signup():
+    current_app.logger.info('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    try:
+        form = request.json['data']
+    except KeyError as k:
+        error_message = "KeyError: {}".format(k.args[0])
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    else:
+        current_app.logger.debug('Post: {}'.format(form))
+        # 查重
+        if db.session.query(exists().where(Users.pnumber == form['Pnumber'])).scalar():
+            return {'message': 1, 'data': '{} conflict'.format(form['Pnumber'])}
+        elif db.session.query(exists().where(Users.mail == form['Mail'])).scalar():
+            return {'message': 2, 'data': '{} conflict'.format(form['Mail'])}
+        new_user = Users(uname=form['Uname'], pw=form['PW'], mail=form['Mail'], pnumber=form['Pnumber'])
+        db.session.add(new_user)
+        db.session.commit()
+        current_app.logger.debug('Uid: {}'.format(new_user.uid))
+        return {'message': 0, 'data': new_user.uid}
+
+
+# Debug
+@client.route('/signin', methods=['POST'])
+def signin():
+    current_app.logger.info('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    try:
+        form = request.json['data']
+        current_app.logger.debug('Post: {}'.format(form))
+        tp = form['type']
+        info = form['info']
+        pw = form['PW']
+    except KeyError as k:
+        error_message = "KeyError: {}".format(k.args[0])
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    else:
+        # uid
+        if tp == 0:
+            u = db.session.query(Users).filter(Users.uid == info).one_or_none()
+        # pnumber
+        elif tp == 1:
+            u = db.session.query(Users).filter(Users.pnumber == info).one_or_none()
+        # mail
+        else:
+            u = db.session.query(Users).filter(Users.mail == info).one_or_none()
+        if u is None or u.pw != pw:
+            return ERROR()
+        else:
+            return {'message': 0,
+                    'data': {'Uname': u.uname, 'Pnumber': u.pnumber, 'Mail': u.mail, 'UID': u.uid}}
+
+
+# NOT Debug
+# front page
+@client.route('/user/<UID>/overview', methods=['GET'])
+def hello(UID):
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    # if the user has chosen any vocabulary
+    vid = db.session.query(Users.vid).filter(Users.uid == UID).scalar()
+    if vid is None:
+        error_message = "The user({}) didn't choose any vocabulary!".format(UID)
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    # vname
+    v = db.session.query(Vocabulary).filter(Vocabulary.vid == vid).one()
+    vname = v.vname
+
+    review, learn = REVIEW, LEARN
+    have_learned = db.session.query(func.count(Plan.tid)).filter(Plan.uid == UID, Plan.proficiency != 0).scalar()
+    not_learned = db.session.query(func.count(Plan.tid)).filter(Plan.uid == UID, Plan.proficiency == 0).scalar()
+    review = min(review, have_learned)
+    learn = min(learn, not_learned)
+
+    t_record = db.session.query(Record).filter(Record.dates == date.today(), Record.uid == UID).one_or_none()
+    # 如果今天还没有背单词
+    if t_record is None:
+        y_record = db.session.query(Record.aday).filter(
+            Record.dates == date.today() - timedelta(days=1), Record.uid == UID).scalar()
+        # 如果昨天没有背单词
+        if y_record is None:
+            cont = 0
+        else:
+            cont = y_record
+    else:
+        cont = t_record.aday
+        today_learned = t_record.learned
+        today_reviewed = t_record.reviewed
+        learn = max(0, learn - today_learned)
+        review = max(0, review - today_reviewed)
+    return {"message": 0, "data": {
+        "Vname": vname,
+        "alreadyRecite": have_learned,
+        "remained": not_learned,
+        "today learn": learn,
+        "today review": review,
+        "continuous": cont,
+    }}
+
+
+# NOT Debug
+@client.route('/user/<UID>/info', methods=['GET', 'POST'])
+def userInfo(UID):
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    if request.method == 'POST':
+        try:
+            form = request.json['data']
+        except KeyError as k:
+            error_message = "KeyError: {}".format(k.args[0])
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        else:
+            db.session.query(Users).filter(Users.uid == UID).update({k.lower(): v for k, v in form.item()})
+            db.commit()
+            return OK()
+    elif request.method == 'GET':
+        user = db.session.query(Users).filter(Users.uid == UID).one_or_none()
+        if user is None:
+            error_message = "UID {} does not exist".format(UID)
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        return {"message": 0, "data": {
+            "Uname": user.uname, "Avatar": user.avatar, "Sex": user.sex, "Education": user.education,
+            "Grade": user.grade
+        }}
+
+
+# NOT Debug
+@client.route('/plan', methods=['GET'])
+def plan():
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    vs = db.session.query(Vocabulary).all()
+    if len(vs) == 0:
+        error_message = "Unable to find any vocabulary"
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    return {"message": 0, "data": [(v.vid, v.vname, v.count, v.day, v.type) for v in vs]}
+
+
+# Debug
+@client.route('/user/<UID>/plan', methods=['POST'])
+def updateUserPlan(UID):
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    try:
+        vname = request.json['data']['Vname']
+    except KeyError as k:
+        error_message = "KeyError: {}".format(k.args[0])
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    else:
+        start = time()
+        vocab = db.session.query(Vocabulary).filter(Vocabulary.vname == vname).one()
+        vid = vocab.vid
+        db.session.query(Users).filter(Users.uid == UID).update({"vid": vid})
+        # Delte old
+        db.session.query(Plan).filter(Plan.uid == UID).delete()
+        # Add new
+        db.session.execute("""INSERT INTO plan
+        (SELECT uid,tid AS tid, 0 AS proficiency, NULL AS dates
+        FROM users u, takes t
+        WHERE u.vid=t.vid AND uid='{}');""".format(UID))
+        db.session.commit()
+        print(time() - start)
+        current_app.logger.debug(time() - start)
+        return OK()
+
 # # Debug
 # # test page
 # @client.route('/plan/<UID>/<int:seed>', methods=['GET'])
 # def getTest(UID, seed):
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
 #     random.seed(seed)
 #     global REVIEW, LEARN
 #     review, learn = REVIEW, LEARN
@@ -281,26 +260,26 @@ def home():
 #         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
 #         if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
 #             error_message = "The user({}) didn't choose any vocabulary".format(UID)
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         header = have_learned[0]
 #         have_learned = have_learned[1:]
 #         not_learned = not_learned[1:]
 #         if len(have_learned) + len(not_learned) < 4:
 #             error_message = "The vocabulary is too small".format(UID)
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         review = min(review, len(have_learned))
 #         learn = min(learn, len(not_learned))
 #         if len(have_learned) != 0:
 #             review_item = random.sample(have_learned, review)
 #         else:
-#             client.logger.debug("User {} hasn't learner any word yet".format(UID))
+#             current_app.logger.debug("User {} hasn't learner any word yet".format(UID))
 #             review_item = []
 #         if len(not_learned) != 0:
 #             learn_item = random.sample(not_learned, learn)
 #         else:
-#             client.logger.debug("User {} doesn't have any new word to learn".format(UID))
+#             current_app.logger.debug("User {} doesn't have any new word to learn".format(UID))
 #             learn_item = []
 #         today_learn = []
 #         for item in learn_item:
@@ -337,12 +316,12 @@ def home():
 # # Debug
 # @client.route('/plan/<UID>', methods=['GET', 'POST'])
 # def updatePlan(UID):
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
 #     if request.method == 'GET':
 #         user_plan = database.SELECTfromTwoTableWHERE('PLAN', 'DICTIONARY', {"UID": [UID]})
 #         if user_plan is False or len(user_plan) == 1:
 #             error_message = "The user({}) didn't choose any vocabulary!".format(UID)
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         header = user_plan[0]
 #         data = user_plan[1:]
@@ -361,13 +340,13 @@ def home():
 #             res = request.json['data']['result']
 #         except KeyError as k:
 #             error_message = "KeyError: {}".format(k.args[0])
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         else:
 #             for tid, wid, p in res:
 #                 if not database.UPDATEprecise('PLAN', 'Proficiency', p, {'UID': [UID], 'TID': [tid], 'WID': [wid]}):
 #                     error_message = "Unable to update Plan UID: {} TID: {} WID: {}".format(UID, tid, wid)
-#                     client.logger.error(error_message)
+#                     current_app.logger.error(error_message)
 #                     return ERROR(error_message)
 #             return OK()
 #
@@ -375,13 +354,13 @@ def home():
 # # Debug
 # @client.route('/word/<WID>', methods=['GET'])
 # def getWord(WID):
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
 #     if request.method == 'GET':
 #         keys = ['English', 'Chinese', 'Psymbol']
 #         data = database.SELECTfromWHERE('DICTIONARY', {'WID': [WID]})
 #         if data is False or len(data) != 2:
 #             error_message = "Unable to find word {}.".format(WID)
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         header = data[0]
 #         data = data[1]
@@ -393,7 +372,7 @@ def home():
 # # Debug
 # @client.route('/record/<UID>', methods=['POST', 'GET'])
 # def record(UID):
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
 #     if request.method == 'POST':
 #         try:
 #             form = request.json['data']
@@ -403,7 +382,7 @@ def home():
 #             end = form['end']
 #         except KeyError as k:
 #             error_message = "KeyError: {}".format(k.args[0])
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         else:
 #             start_day = datetime.datetime.strptime(start, TIME_FORMAT)
@@ -414,7 +393,7 @@ def home():
 #                 data = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [i]})
 #                 if data is False:
 #                     error_message = "Unable to find Plan for User {}".format(UID)
-#                     client.logger.error(error_message)
+#                     current_app.logger.error(error_message)
 #                     return ERROR(error_message)
 #                 p[i] = len(data) - 1
 #             while now_day <= end_day:
@@ -455,7 +434,7 @@ def home():
 #         data = database.SELECTfromWHERE('RECORD', {'UID': [UID]})
 #         if data is False or len(data) < 2:
 #             error_message = "Unable to find any record of User {}".format(UID)
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         header = data[0]
 #         data = data[1:]
@@ -467,7 +446,7 @@ def home():
 #             if d <= last_day:
 #                 days = d
 #         for line in data:
-#             client.logger.debug(line)
+#             current_app.logger.debug(line)
 #         p_info = []
 #         a_time = []
 #         if days == 0:
@@ -496,7 +475,7 @@ def home():
 # # Debug
 # @client.route('/feedback', methods=['POST'])
 # def feedback():
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
 #     if request.method == 'POST':
 #         try:
 #             form = request.json['data']
@@ -504,17 +483,17 @@ def home():
 #             info = form['Info']
 #         except KeyError as k:
 #             error_message = "KeyError: {}".format(k.args[0])
-#             client.logger.error(error_message)
+#             current_app.logger.error(error_message)
 #             return ERROR(error_message)
 #         else:
 #             fid = newID('FEEDBACK', 'FID')
-#             client.logger.debug('New FID: {}'.format(fid))
-#             client.logger.debug('Feedback: {} from {}'.format(info, uid))
+#             current_app.logger.debug('New FID: {}'.format(fid))
+#             current_app.logger.debug('Feedback: {} from {}'.format(info, uid))
 #             database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
 #         return OK()
 #
 #
 # @client.route('/test')
 # def test():
-#     client.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
 #     return OK()
