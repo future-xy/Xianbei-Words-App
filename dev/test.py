@@ -7,9 +7,10 @@
 
 from requests import *
 
-url = 'http://localhost:9102/'
+url = 'http://111.231.250.160:9102/'
 
 data = {'data': {'type': 0, 'info': '0001', 'PW': '123456'}}
-data2 = {'data': {"Vname": "高考单词闪过"}}
+data2 = {'data': {"Vname": "17天搞定GRE单词"}}
+data3 = {'data': {"result":[('')]}}
 
 r = post(url + 'user/0002/plan', json=data2)

@@ -8,7 +8,7 @@
 from app import db
 from . import client
 from app.util.utils import OK, ERROR
-from config import REVIEW, LEARN
+from config import REVIEW, LEARN, DAY_FORMAT, TIME_FORMAT
 from models import Users, Vocabulary, Dictionary, Feedback, Plan, Record, Takes
 
 from flask import request, current_app, render_template
@@ -67,7 +67,12 @@ def test():
     # have_learned = db.session.query(func.count(Plan.tid)).filter(Plan.uid == '0001', Plan.proficiency == 0).scalar()
     # print(have_learned)
     # db.session.query(Users).filter(Users.uid == '0001').update({'uname': 'hahahaha'})
-    print(db.session.query(Users).all())
+    # data = db.session.query(Plan.tid, Takes.wid, Dictionary.english, Dictionary.chinese, Plan.proficiency).filter(
+    #     Plan.tid == Takes.tid, Takes.wid == Dictionary.wid, Plan.uid == '0001').all()
+    today_record = db.session.query(Record.ahour).filter(Record.dates == date.fromisoformat('2020-01-28'),
+                                                         Record.uid == '0001').scalar()
+
+    print(today_record)
     return "HELLO WORLD"
 
 
@@ -231,7 +236,6 @@ def updateUserPlan(UID):
         current_app.logger.error(error_message)
         return ERROR(error_message)
     else:
-        start = time()
         vocab = db.session.query(Vocabulary).filter(Vocabulary.vname == vname).one()
         vid = vocab.vid
         db.session.query(Users).filter(Users.uid == UID).update({"vid": vid})
@@ -243,257 +247,214 @@ def updateUserPlan(UID):
         FROM users u, takes t
         WHERE u.vid=t.vid AND uid='{}');""".format(UID))
         db.session.commit()
-        print(time() - start)
-        current_app.logger.debug(time() - start)
         return OK()
 
-# # Debug
-# # test page
-# @client.route('/plan/<UID>/<int:seed>', methods=['GET'])
-# def getTest(UID, seed):
-#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     random.seed(seed)
-#     global REVIEW, LEARN
-#     review, learn = REVIEW, LEARN
-#     if request.method == 'GET':
-#         have_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [1, 2, 3]})
-#         not_learned = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [0]})
-#         if have_learned is False or not_learned is False or len(have_learned) + len(not_learned) == 2:
-#             error_message = "The user({}) didn't choose any vocabulary".format(UID)
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         header = have_learned[0]
-#         have_learned = have_learned[1:]
-#         not_learned = not_learned[1:]
-#         if len(have_learned) + len(not_learned) < 4:
-#             error_message = "The vocabulary is too small".format(UID)
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         review = min(review, len(have_learned))
-#         learn = min(learn, len(not_learned))
-#         if len(have_learned) != 0:
-#             review_item = random.sample(have_learned, review)
-#         else:
-#             current_app.logger.debug("User {} hasn't learner any word yet".format(UID))
-#             review_item = []
-#         if len(not_learned) != 0:
-#             learn_item = random.sample(not_learned, learn)
-#         else:
-#             current_app.logger.debug("User {} doesn't have any new word to learn".format(UID))
-#             learn_item = []
-#         today_learn = []
-#         for item in learn_item:
-#             ops = random.sample(have_learned + not_learned, 4)
-#             if item not in ops:
-#                 ops.pop(0)
-#                 ops.append(item)
-#             options = [op[header.index('wid')] for op in ops]
-#             random.shuffle(options)
-#             today_learn.append((item[header.index('tid')],
-#                                 item[header.index('wid')],
-#                                 item[header.index('proficiency')],
-#                                 options
-#                                 ))
-#         today_review = []
-#         for item in review_item:
-#             ops = random.sample(have_learned + not_learned, 4)
-#             if item not in ops:
-#                 ops.pop(0)
-#                 ops.append(item)
-#             options = [op[header.index('wid')] for op in ops]
-#             random.shuffle(options)
-#             today_review.append((item[header.index('tid')],
-#                                  item[header.index('wid')],
-#                                  item[header.index('proficiency')],
-#                                  options
-#                                  ))
-#         return {"message": 0, "data": {
-#             "todayLearn": today_learn,
-#             "todayReview": today_review
-#         }}
-#
-#
-# # Debug
-# @client.route('/plan/<UID>', methods=['GET', 'POST'])
-# def updatePlan(UID):
-#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     if request.method == 'GET':
-#         user_plan = database.SELECTfromTwoTableWHERE('PLAN', 'DICTIONARY', {"UID": [UID]})
-#         if user_plan is False or len(user_plan) == 1:
-#             error_message = "The user({}) didn't choose any vocabulary!".format(UID)
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         header = user_plan[0]
-#         data = user_plan[1:]
-#         plan = []
-#         for item in data:
-#             plan.append((
-#                 item[header.index('tid')],
-#                 item[header.index('wid')],
-#                 item[header.index('english')],
-#                 item[header.index('chinese')],
-#                 item[header.index('proficiency')]
-#             ))
-#         return {"message": 0, "data": plan}
-#     elif request.method == 'POST':
-#         try:
-#             res = request.json['data']['result']
-#         except KeyError as k:
-#             error_message = "KeyError: {}".format(k.args[0])
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         else:
-#             for tid, wid, p in res:
-#                 if not database.UPDATEprecise('PLAN', 'Proficiency', p, {'UID': [UID], 'TID': [tid], 'WID': [wid]}):
-#                     error_message = "Unable to update Plan UID: {} TID: {} WID: {}".format(UID, tid, wid)
-#                     current_app.logger.error(error_message)
-#                     return ERROR(error_message)
-#             return OK()
-#
-#
-# # Debug
-# @client.route('/word/<WID>', methods=['GET'])
-# def getWord(WID):
-#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     if request.method == 'GET':
-#         keys = ['English', 'Chinese', 'Psymbol']
-#         data = database.SELECTfromWHERE('DICTIONARY', {'WID': [WID]})
-#         if data is False or len(data) != 2:
-#             error_message = "Unable to find word {}.".format(WID)
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         header = data[0]
-#         data = data[1]
-#         return {"message": 0, "data": {
-#             key: data[header.index(key.lower())] for key in keys
-#         }}
-#
-#
-# # Debug
-# @client.route('/record/<UID>', methods=['POST', 'GET'])
-# def record(UID):
-#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     if request.method == 'POST':
-#         try:
-#             form = request.json['data']
-#             learned = form['count_learned']
-#             reviewed = form['count_reviewed']
-#             start = form['start']
-#             end = form['end']
-#         except KeyError as k:
-#             error_message = "KeyError: {}".format(k.args[0])
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         else:
-#             start_day = datetime.datetime.strptime(start, TIME_FORMAT)
-#             now_day = start_day.replace(minute=0, second=0)
-#             end_day = datetime.datetime.strptime(end, TIME_FORMAT)
-#             p = [0, 0, 0, 0]
-#             for i in range(len(p)):
-#                 data = database.SELECTfromWHERE('PLAN', {'UID': [UID], 'Proficiency': [i]})
-#                 if data is False:
-#                     error_message = "Unable to find Plan for User {}".format(UID)
-#                     current_app.logger.error(error_message)
-#                     return ERROR(error_message)
-#                 p[i] = len(data) - 1
-#             while now_day <= end_day:
-#                 this_day = now_day.strftime(DAY_FORMAT)
-#                 today_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
-#                 # record中没有这一天的记录
-#                 if today_record is False or len(today_record) < 2:
-#                     last_record = database.SELECTfromWHERE('RECORD', {
-#                         'Dates': [(now_day - datetime.timedelta(days=1)).strftime(DAY_FORMAT)],
-#                         'UID': [UID]})
-#                     if last_record is False or len(last_record) == 1:
-#                         aday = 0
-#                     else:
-#                         aday = last_record[1][last_record[0].index('aday')] + 1
-#                     ahour = np.zeros(24).astype(np.float)
-#                     database.INSERTvalues('RECORD', (
-#                         newID('RECORD', 'SID'), UID, this_day, learned, reviewed, 0, 0, p, ahour.tolist(), aday))
-#                 # 有这一天的记录
-#                 else:
-#                     ahour = np.array(today_record[1][today_record[0].index('ahour')], dtype=np.float)
-#                     database.UPDATEprecise('RECORD', 'Proficiency', p, {'UID': [UID], 'Dates': [this_day]})
-#                 ahour[now_day.hour] = ahour[now_day.hour] + 60
-#                 database.UPDATEprecise('RECORD', 'Ahour', ahour.tolist(), {'UID': [UID], 'Dates': [this_day]})
-#                 now_day = now_day + datetime.timedelta(hours=1)
-#             this_day = start_day.strftime(DAY_FORMAT)
-#             start_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
-#             header = start_record[0]
-#             ahour = start_record[1][header.index('ahour')]
-#             ahour[start_day.hour] -= start_day.minute
-#             database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
-#             this_day = end_day.strftime(DAY_FORMAT)
-#             end_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
-#             ahour = end_record[1][header.index('ahour')]
-#             ahour[end_day.hour] -= (60 - end_day.minute)
-#             database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
-#             return OK()
-#     elif request.method == 'GET':
-#         data = database.SELECTfromWHERE('RECORD', {'UID': [UID]})
-#         if data is False or len(data) < 2:
-#             error_message = "Unable to find any record of User {}".format(UID)
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         header = data[0]
-#         data = data[1:]
-#         data.sort(key=lambda x: sort_by_time(x, header.index('dates'), DAY_FORMAT))
-#         records = {sort_by_time(item, header.index('dates'), DAY_FORMAT): item for item in data}
-#         days = 0
-#         last_day = datetime.datetime.strptime(today(-6), DAY_FORMAT).timestamp()
-#         for d in records:
-#             if d <= last_day:
-#                 days = d
-#         for line in data:
-#             current_app.logger.debug(line)
-#         p_info = []
-#         a_time = []
-#         if days == 0:
-#             p_info.append((0, 0, 0, 0))
-#         else:
-#             p_info.append(records[days][header.index('proficiency')])
-#         for i in range(-6, 1):
-#             days = datetime.datetime.strptime(today(i), DAY_FORMAT).timestamp()
-#             if days in records:
-#                 p_info.append(records[days][header.index('proficiency')])
-#                 a_time.append(records[days][header.index('ahour')])
-#                 # ahour += np.array(records[days][header.index('ahour')]).astype(np.float)
-#             else:
-#                 p_info.append(p_info[-1])
-#                 a_time.append(np.zeros(24))
-#         a_time = np.array(a_time, dtype=np.float)
-#         f_curve = np.random.normal(loc=5, size=7)
-#         return {'message': 0, 'data': {
-#             'proficiencyInfo': p_info[1:],
-#             'Ahour': a_time.sum(axis=0).tolist(),
-#             'Forgetting curve': f_curve.tolist(),
-#             'active time': a_time.sum(axis=1).tolist()
-#         }}
-#
-#
-# # Debug
-# @client.route('/feedback', methods=['POST'])
-# def feedback():
-#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     if request.method == 'POST':
-#         try:
-#             form = request.json['data']
-#             uid = form['UID']
-#             info = form['Info']
-#         except KeyError as k:
-#             error_message = "KeyError: {}".format(k.args[0])
-#             current_app.logger.error(error_message)
-#             return ERROR(error_message)
-#         else:
-#             fid = newID('FEEDBACK', 'FID')
-#             current_app.logger.debug('New FID: {}'.format(fid))
-#             current_app.logger.debug('Feedback: {} from {}'.format(info, uid))
-#             database.INSERTvalues('FEEDBACK', (fid, uid, timestamp(), info))
-#         return OK()
-#
-#
-# @client.route('/test')
-# def test():
-#     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-#     return OK()
+
+# Debug
+# test page
+@client.route('/plan/<UID>/<int:seed>', methods=['GET'])
+def getTest(UID, seed):
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    #
+    vid = db.session.query(Users.vid).filter(Users.uid == UID).scalar()
+    if vid is None:
+        error_message = "The user({}) didn't choose any vocabulary".format(UID)
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    random.seed(seed)
+    review, learn = REVIEW, LEARN
+    have_learned = db.session.query(Plan.tid, Takes.wid, Plan.proficiency).filter(Plan.tid == Takes.tid,
+                                                                                  Plan.uid == UID,
+                                                                                  Plan.proficiency != 0).all()
+    not_learned = db.session.query(Plan.tid, Takes.wid, Plan.proficiency).filter(Plan.tid == Takes.tid,
+                                                                                 Plan.uid == UID,
+                                                                                 Plan.proficiency == 0).all()
+    if len(have_learned) + len(not_learned) < 4:
+        error_message = "The vocabulary is too small".format(UID)
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    review = min(review, len(have_learned))
+    learn = min(learn, len(not_learned))
+    if len(have_learned) != 0:
+        review_item = random.sample(have_learned, review)
+    else:
+        current_app.logger.debug("User {} hasn't learner any word yet".format(UID))
+        review_item = []
+    if len(not_learned) != 0:
+        learn_item = random.sample(not_learned, learn)
+    else:
+        current_app.logger.debug("User {} doesn't have any new word to learn".format(UID))
+        learn_item = []
+    today_learn = []
+    for item in learn_item:
+        ops = random.sample(have_learned + not_learned, 4)
+        if item not in ops:
+            ops.pop(0)
+            ops.append(item)
+        options = [op[1] for op in ops]
+        random.shuffle(options)
+        today_learn.append(item + (options,))
+    today_review = []
+    for item in review_item:
+        ops = random.sample(have_learned + not_learned, 4)
+        if item not in ops:
+            ops.pop(0)
+            ops.append(item)
+        options = [op[1] for op in ops]
+        random.shuffle(options)
+        today_review.append(item + (options,))
+    return {"message": 0, "data": {
+        "todayLearn": today_learn,
+        "todayReview": today_review
+    }}
+
+
+# Debug
+@client.route('/plan/<UID>', methods=['GET', 'POST'])
+def updatePlan(UID):
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    if request.method == 'GET':
+        #
+        vid = db.session.query(Users.vid).filter(Users.uid == UID).scalar()
+        if vid is None:
+            error_message = "The user({}) didn't choose any vocabulary".format(UID)
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        data = db.session.query(Plan.tid, Takes.wid, Dictionary.english, Dictionary.chinese, Plan.proficiency).filter(
+            Plan.tid == Takes.tid, Takes.wid == Dictionary.wid, Plan.uid == UID).all()
+        return {"message": 0, "data": data}
+    elif request.method == 'POST':
+        try:
+            res = request.json['data']['result']
+        except KeyError as k:
+            error_message = "KeyError: {}".format(k.args[0])
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        else:
+            for tid, wid, p in res:
+                db.session.query(Plan).filter(Plan.uid == UID, Plan.tid == tid).upate({'proficiency': p})
+            db.session.commit()
+            return OK()
+
+
+# Debug
+@client.route('/word/<WID>', methods=['GET'])
+def getWord(WID):
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    w = db.session.query(Dictionary).filter(Dictionary.wid == WID).one()
+    return {"message": 0, "data": {"English": w.english, "Chinese": w.chinese, "Psymbol": w.psymbol}}
+
+
+# Debug
+@client.route('/record/<UID>', methods=['POST', 'GET'])
+def record(UID):
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    # 换一种方法，update,insert等
+    if request.method == 'POST':
+        try:
+            form = request.json['data']
+            # 没有更新进去
+            learned = form['count_learned']
+            reviewed = form['count_reviewed']
+            start = form['start']
+            end = form['end']
+        except KeyError as k:
+            error_message = "KeyError: {}".format(k.args[0])
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        else:
+            start_day = datetime.strptime(start, TIME_FORMAT)
+            now_day = start_day.replace(minute=0, second=0)
+            end_day = datetime.strptime(end, TIME_FORMAT)
+            p = [db.session.query(func.count(Plan.tid)).filter(Plan.uid == UID, Plan.proficiency == i).scalar() for i in
+                 range(4)]
+            while now_day <= end_day:
+                this_day = now_day.strftime(DAY_FORMAT)
+                # today_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
+                today_record = db.session.query(Record.ahour).filter(Record.dates == date.fromisoformat(this_day),
+                                                                     Record.uid == UID).scalar()
+                # record中没有这一天的记录
+                if today_record is None:
+                    last_record = db.session.query(Record.aday).filter(
+                        Record.dates == date.fromisoformat(this_day) - timedelta(days=1), Record.uid == UID).scalar()
+                    if last_record is None:
+                        aday = 0
+                    else:
+                        aday = last_record + 1
+                    ahour = np.zeros(24).astype(np.float)
+                    db.session.add(
+                        Record(uid=UID, dates=date.fromisoformat(this_day), learned=learned, reviewed=reviewed,
+                               proficiency=p, ahour=ahour.tolist(), aday=aday))
+                # 有这一天的记录
+                else:
+                    ahour = np.array(today_record)
+                    # database.UPDATEprecise('RECORD', 'Proficiency', p, {'UID': [UID], 'Dates': [this_day]})
+                    db.session.query(Record).filter(
+                        Record.uid == UID, Record.dates == date.fromisoformat(this_day)).update({'proficiency': p})
+                ahour[now_day.hour] = ahour[now_day.hour] + 60
+                # database.UPDATEprecise('RECORD', 'Ahour', ahour.tolist(), {'UID': [UID], 'Dates': [this_day]})
+                db.session.query(Record).filter(Record.uid == UID, Record.dates == date.fromisoformat(this_day)).update(
+                    {'ahour': ahour.tolist()})
+                now_day = now_day + timedelta(hours=1)
+            this_day = start_day.strftime(DAY_FORMAT)
+            start_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
+            header = start_record[0]
+            ahour = start_record[1][header.index('ahour')]
+            ahour[start_day.hour] -= start_day.minute
+            database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
+            this_day = end_day.strftime(DAY_FORMAT)
+            end_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
+            ahour = end_record[1][header.index('ahour')]
+            ahour[end_day.hour] -= (60 - end_day.minute)
+            database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
+            return OK()
+    elif request.method == 'GET':
+        init_record = Record.query.order_by(Record.dates.desc()).filter(
+            Record.uid == UID, Record.dates <= date.today() - timedelta(7)).first()
+        records = Record.query.order_by(Record.dates.desc()).filter(Record.uid == UID,
+                                                                    Record.dates > date.today() - timedelta(7)).all()
+        if init_record is None and len(records) == 0:
+            error_message = "Unable to find any record of User {}".format(UID)
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        f_curve = np.zeros(7).tolist()
+        if len(records) == 0:
+            p_info = [init_record.proficiency] * 7
+            a_hour = np.zeros(24).tolist()
+            a_time = np.zeros(7).tolist()
+        else:
+            record_7 = [init_record]
+            for d in range(-6, 1):
+                if records[-1].dates == date.today() + timedelta(d):
+                    record_7.append(records.pop())
+                else:
+                    record_7.append(record_7[-1])
+            record_7.pop(0)
+            p_info = [r.proficiency for r in record_7]
+            a = np.array([r.ahour for r in record_7])
+            a_hour = a.mean(axis=0).tolist()
+            a_time = a.sum(axis=1).tolist()
+        return {'message': 0, 'data': {
+            'proficiencyInfo': p_info,
+            'Ahour': a_hour,
+            'Forgetting curve': f_curve,
+            'active time': a_time
+        }}
+
+
+# Debug
+@client.route('/feedback', methods=['POST'])
+def feedback():
+    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    try:
+        form = request.json['data']
+        uid = form['UID']
+        info = form['Info']
+    except KeyError as k:
+        error_message = "KeyError: {}".format(k.args[0])
+        current_app.logger.error(error_message)
+        return ERROR(error_message)
+    else:
+        db.session.add(Feedback(uid=uid, info=info))
+        db.session.commit()
+        return OK()

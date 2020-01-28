@@ -31,7 +31,7 @@ class Users(db.Model):
     def __repr__(self):
         return "<Users('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}')>".format(
             self.uid, self.uname, self.pw, self.avatar, self.mail, self.pnumber, self.sex, self.education, self.grade,
-            self.vid)
+            self.v)
 
 
 class Dictionary(db.Model):
@@ -39,7 +39,7 @@ class Dictionary(db.Model):
     wid = Column("wid", String(32), primary_key=True, nullable=False, default=lambda: newID(prefix='W'))
     english = Column("english", String(64), nullable=False, default='')
     psymbol = Column("psymbol", String(32), nullable=False, default='')
-    chinese = Column("chinese", Text, nullable=False, default='')
+    chinese = Column("chinese", ARRAY(Text), nullable=False, default='')
 
     def __repr__(self):
         return "<Dictionary('{}','{}','{}','{}')>".format(self.wid, self.english, self.psymbol, self.chinese)
