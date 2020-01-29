@@ -12,7 +12,7 @@ from config import REVIEW, LEARN, DAY_FORMAT, TIME_FORMAT
 from models import Users, Vocabulary, Dictionary, Feedback, Plan, Record, Takes
 
 from flask import request, current_app, render_template
-from flask_login import current_user, login_user, login_required
+from flask_login import current_user, login_user, login_required, logout_user
 from sqlalchemy.sql import exists
 from sqlalchemy import or_, func
 
@@ -69,7 +69,6 @@ def signup():
 @client.route('/signin', methods=['POST'])
 def signin():
     current_app.logger.info('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-    print(request.json['data'])
     try:
         form = request.json['data']
         current_app.logger.debug('Post: {}'.format(form))
@@ -99,14 +98,22 @@ def signin():
                     'data': {'Uname': u.uname, 'Pnumber': u.pnumber, 'Mail': u.mail, 'UID': u.uid}}
 
 
+@client.route('/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    return OK()
+
+
 # NOT Debug
 # front page
-@client.route('/user/<UID>/overview', methods=['GET'])
+@client.route('/user/overview', methods=['GET'])
 @login_required
-def hello(UID):
+def hello():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    UID = current_user.uid
     # if the user has chosen any vocabulary
-    vid = db.session.query(Users.vid).filter(Users.uid == UID).scalar()
+    vid = current_user.vid
     if vid is None:
         error_message = "The user({}) didn't choose any vocabulary!".format(UID)
         current_app.logger.error(error_message)
@@ -148,10 +155,11 @@ def hello(UID):
 
 
 # NOT Debug
-@client.route('/user/<UID>/info', methods=['GET', 'POST'])
+@client.route('/user/info', methods=['GET', 'POST'])
 @login_required
-def userInfo(UID):
+def userInfo():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    UID = current_user.uid
     if request.method == 'POST':
         try:
             form = request.json['data']
@@ -168,11 +176,7 @@ def userInfo(UID):
             db.session.commit()
             return OK()
     elif request.method == 'GET':
-        user = db.session.query(Users).filter(Users.uid == UID).one_or_none()
-        if user is None:
-            error_message = "UID {} does not exist".format(UID)
-            current_app.logger.error(error_message)
-            return ERROR(error_message)
+        user = current_user
         return {"message": 0, "data": {
             "Uname": user.uname, "Avatar": user.avatar, "Sex": user.sex, "Education": user.education,
             "Grade": user.grade
@@ -180,52 +184,77 @@ def userInfo(UID):
 
 
 # NOT Debug
-@client.route('/plan', methods=['GET'])
+@client.route('/vocabulary', methods=['GET'])
 @login_required
 def plan():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-    vs = db.session.query(Vocabulary).all()
+    vs = db.session.query(Vocabulary.vid, Vocabulary.vname, Vocabulary.count, Vocabulary.day, Vocabulary.type).all()
+    print(vs)
     if len(vs) == 0:
         error_message = "Unable to find any vocabulary"
         current_app.logger.error(error_message)
         return ERROR(error_message)
-    return {"message": 0, "data": [(v.vid, v.vname, v.count, v.day, v.type) for v in vs]}
+    return {"message": 0, "data": vs}
 
 
 # Debug
-@client.route('/user/<UID>/plan', methods=['POST'])
+# !!!
+@client.route('/user/plan', methods=['PUT', 'POST', 'GET'])
 @login_required
-def updateUserPlan(UID):
+def updateUserPlan():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-    try:
-        vname = request.json['data']['Vname']
-    except KeyError as k:
-        error_message = "KeyError: {}".format(k.args[0])
-        current_app.logger.error(error_message)
-        return ERROR(error_message)
-    else:
-        vocab = db.session.query(Vocabulary).filter(Vocabulary.vname == vname).one()
-        vid = vocab.vid
-        db.session.query(Users).filter(Users.uid == UID).update({"vid": vid})
-        # Delte old
-        db.session.query(Plan).filter(Plan.uid == UID).delete()
-        # Add new
-        db.session.execute("""INSERT INTO plan
-        (SELECT uid,tid AS tid, 0 AS proficiency, NULL AS dates
-        FROM users u, takes t
-        WHERE u.vid=t.vid AND uid='{}');""".format(UID))
-        db.session.commit()
-        return OK()
+    UID = current_user.uid
+    if request.method == 'PUT':
+        try:
+            vname = request.json['data']['Vname']
+        except KeyError as k:
+            error_message = "KeyError: {}".format(k.args[0])
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        else:
+            vocab = db.session.query(Vocabulary).filter(Vocabulary.vname == vname).one()
+            vid = vocab.vid
+            db.session.query(Users).filter(Users.uid == UID).update({"vid": vid})
+            # Delte old
+            db.session.query(Plan).filter(Plan.uid == UID).delete()
+            # Add new
+            db.session.execute("""INSERT INTO plan
+            (SELECT uid,tid AS tid, 0 AS proficiency, NULL AS dates
+            FROM users u, takes t
+            WHERE u.vid=t.vid AND uid='{}');""".format(UID))
+            db.session.commit()
+            return OK()
+    elif request.method == 'GET':
+        vid = current_user.vid
+        if vid is None:
+            error_message = "The user({}) didn't choose any vocabulary".format(UID)
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        data = db.session.query(Plan.tid, Takes.wid, Dictionary.english, Dictionary.chinese, Plan.proficiency).filter(
+            Plan.tid == Takes.tid, Takes.wid == Dictionary.wid, Plan.uid == UID).all()
+        return {"message": 0, "data": data}
+    elif request.method == 'POST':
+        try:
+            res = request.json['data']['result']
+        except KeyError as k:
+            error_message = "KeyError: {}".format(k.args[0])
+            current_app.logger.error(error_message)
+            return ERROR(error_message)
+        else:
+            for tid, wid, p in res:
+                db.session.query(Plan).filter(Plan.uid == UID, Plan.tid == tid).upate({'proficiency': p})
+            db.session.commit()
+            return OK()
 
 
 # Debug
 # test page
-@client.route('/plan/<UID>/<int:seed>', methods=['GET'])
+@client.route('/user/plan/<int:seed>', methods=['GET'])
 @login_required
-def getTest(UID, seed):
+def getTest(seed):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-    #
-    vid = db.session.query(Users.vid).filter(Users.uid == UID).scalar()
+    UID = current_user.uid
+    vid = current_user.vid
     if vid is None:
         error_message = "The user({}) didn't choose any vocabulary".format(UID)
         current_app.logger.error(error_message)
@@ -279,35 +308,6 @@ def getTest(UID, seed):
 
 
 # Debug
-@client.route('/plan/<UID>', methods=['GET', 'POST'])
-@login_required
-def updatePlan(UID):
-    current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-    if request.method == 'GET':
-        #
-        vid = db.session.query(Users.vid).filter(Users.uid == UID).scalar()
-        if vid is None:
-            error_message = "The user({}) didn't choose any vocabulary".format(UID)
-            current_app.logger.error(error_message)
-            return ERROR(error_message)
-        data = db.session.query(Plan.tid, Takes.wid, Dictionary.english, Dictionary.chinese, Plan.proficiency).filter(
-            Plan.tid == Takes.tid, Takes.wid == Dictionary.wid, Plan.uid == UID).all()
-        return {"message": 0, "data": data}
-    elif request.method == 'POST':
-        try:
-            res = request.json['data']['result']
-        except KeyError as k:
-            error_message = "KeyError: {}".format(k.args[0])
-            current_app.logger.error(error_message)
-            return ERROR(error_message)
-        else:
-            for tid, wid, p in res:
-                db.session.query(Plan).filter(Plan.uid == UID, Plan.tid == tid).upate({'proficiency': p})
-            db.session.commit()
-            return OK()
-
-
-# Debug
 @client.route('/word/<WID>', methods=['GET'])
 @login_required
 def getWord(WID):
@@ -317,10 +317,11 @@ def getWord(WID):
 
 
 # Debug
-@client.route('/record/<UID>', methods=['POST', 'GET'])
+@client.route('/user/record', methods=['POST', 'GET'])
 @login_required
-def record(UID):
+def record():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    UID = current_user.uid
     if request.method == 'POST':
         try:
             form = request.json['data']
@@ -417,19 +418,18 @@ def record(UID):
 
 
 # Debug
-@client.route('/feedback', methods=['POST'])
+@client.route('/user/feedback', methods=['POST'])
 @login_required
 def feedback():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     try:
         form = request.json['data']
-        uid = form['UID']
         info = form['Info']
     except KeyError as k:
         error_message = "KeyError: {}".format(k.args[0])
         current_app.logger.error(error_message)
         return ERROR(error_message)
     else:
-        db.session.add(Feedback(uid=uid, info=info))
+        db.session.add(Feedback(uid=current_user.uid, info=info))
         db.session.commit()
         return OK()
