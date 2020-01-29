@@ -13,6 +13,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Text, E
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from datetime import datetime, date
+import numpy as np
 
 
 class Users(db.Model):
@@ -82,11 +83,11 @@ class Record(db.Model):
     __tablename__ = 'record'
     sid = Column("sid", String(32), primary_key=True, nullable=False, default=lambda: newID('S'))
     uid = Column("uid", String(32), ForeignKey('users.uid'), nullable=False)
-    dates = Column("dates", Date, nullable=False, default=date.today)
+    dates = Column("dates", Date, nullable=False)
     learned = Column("learned", Integer, nullable=False, default=0)
     reviewed = Column("reviewed", Integer, nullable=False, default=0)
-    proficiency = Column("proficiency", ARRAY(Integer), nullable=False)
-    ahour = Column("ahour", ARRAY(Float), nullable=False)
+    proficiency = Column("proficiency", ARRAY(Integer), nullable=False, default=np.zeros(4).tolist())
+    ahour = Column("ahour", ARRAY(Float), nullable=False, default=np.zeros(24).tolist())
     aday = Column("aday", Integer, nullable=False, default=0)
 
     def __repr__(self):

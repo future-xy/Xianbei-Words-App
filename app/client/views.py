@@ -25,54 +25,6 @@ from time import time
 @client.route('/test')
 def test():
     print("RUNNING!")
-    # print("_______________________________")
-    # user = Users(uname='test1', pw='123456', mail='1@1', pnumber='123')
-    # db.session.add(user)
-    # print("Input: {}".format(user))
-    # print("Output: {}".format(db.session.query(Users).all()))
-    # print("_______________________________")
-    # print("Output: {}".format(db.session.query(Dictionary).all()))
-    # print("_______________________________")
-    # print("Output: {}".format(db.session.query(Vocabulary).all()))
-    # print("_______________________________")
-    # take = Takes(vid='0001', wid='0001')
-    # print("Input: {}".format(take))
-    # db.session.add(take)
-    # print("Output: {}".format(db.session.query(Takes).all()))
-    # print("_______________________________")
-    # plan1 = Plan(uid='0001', tid='0001', proficiency=1, dates=datetime.now())
-    # print("Input: {}".format(plan1))
-    # p2 = Plan(uid='0001', tid='0002')
-    # print("Input: {}".format(p2))
-    # db.session.add(plan1)
-    # db.session.add(p2)
-    # print("Output: {}".format(db.session.query(Plan).all()))
-    # print("_______________________________")
-    # r1 = Record(uid='0001', learned=1, reviewed=2, proficiency=[1, 0, 0, 0], ahour=np.zeros(24).tolist(), aday=2)
-    # r2 = Record(uid='0002', learned=2, reviewed=2, proficiency=[1, 0, 0, 0], ahour=np.ones(24).tolist(), aday=2)
-    # print("Input: {}".format(r1))
-    # print("Input: {}".format(r2))
-    # db.session.add(r1)
-    # db.session.add(r2)
-    # print("Output: {}".format(db.session.query(Record).all()))
-    # print("_______________________________")
-    # f1 = Feedback(uid='0002', info='hi')
-    # print("Input: {}".format(f1))
-    # db.session.add(f1)
-    # print("Output: {}".format(db.session.query(Feedback).all()))
-    # do = db.session.query(Record.dates).filter(
-    #     and_(Record.uid == '0001', Record.dates == date.today() - timedelta(58))).scalar()
-    # print(type(do))
-    # print(do)
-    # have_learned = db.session.query(func.count(Plan.tid)).filter(Plan.uid == '0001', Plan.proficiency == 0).scalar()
-    # print(have_learned)
-    # db.session.query(Users).filter(Users.uid == '0001').update({'uname': 'hahahaha'})
-    # data = db.session.query(Plan.tid, Takes.wid, Dictionary.english, Dictionary.chinese, Plan.proficiency).filter(
-    #     Plan.tid == Takes.tid, Takes.wid == Dictionary.wid, Plan.uid == '0001').all()
-    today_record = db.session.query(Record.ahour).filter(Record.dates == date.fromisoformat('2020-01-28'),
-                                                         Record.uid == '0001').scalar()
-
-    print(today_record)
     return "HELLO WORLD"
 
 
@@ -349,11 +301,9 @@ def getWord(WID):
 @client.route('/record/<UID>', methods=['POST', 'GET'])
 def record(UID):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
-    # 换一种方法，update,insert等
     if request.method == 'POST':
         try:
             form = request.json['data']
-            # 没有更新进去
             learned = form['count_learned']
             reviewed = form['count_reviewed']
             start = form['start']
@@ -363,50 +313,51 @@ def record(UID):
             current_app.logger.error(error_message)
             return ERROR(error_message)
         else:
-            start_day = datetime.strptime(start, TIME_FORMAT)
-            now_day = start_day.replace(minute=0, second=0)
-            end_day = datetime.strptime(end, TIME_FORMAT)
-            p = [db.session.query(func.count(Plan.tid)).filter(Plan.uid == UID, Plan.proficiency == i).scalar() for i in
-                 range(4)]
-            while now_day <= end_day:
-                this_day = now_day.strftime(DAY_FORMAT)
-                # today_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
-                today_record = db.session.query(Record.ahour).filter(Record.dates == date.fromisoformat(this_day),
-                                                                     Record.uid == UID).scalar()
-                # record中没有这一天的记录
-                if today_record is None:
-                    last_record = db.session.query(Record.aday).filter(
-                        Record.dates == date.fromisoformat(this_day) - timedelta(days=1), Record.uid == UID).scalar()
-                    if last_record is None:
-                        aday = 0
-                    else:
-                        aday = last_record + 1
-                    ahour = np.zeros(24).astype(np.float)
-                    db.session.add(
-                        Record(uid=UID, dates=date.fromisoformat(this_day), learned=learned, reviewed=reviewed,
-                               proficiency=p, ahour=ahour.tolist(), aday=aday))
-                # 有这一天的记录
+            start = datetime.strptime(start, TIME_FORMAT)
+            end = datetime.strptime(end, TIME_FORMAT)
+            start_day = start.date()
+            end_day = end.date()
+            p = [db.session.query(func.count(Plan.tid)).filter(Plan.uid == '0001', Plan.proficiency == i).scalar() for i
+                 in range(4)]
+            # start exist?
+            start_record = db.session.query(Record.learned, Record.reviewed).filter(
+                Record.uid == UID, Record.dates == start_day).one_or_none()
+            if start_record is None:
+                cont = db.session.query(Record.aday).filter(Record.uid == UID,
+                                                            Record.dates == start_day - timedelta(1)).scalar()
+                if cont is None:
+                    a_day = 1
                 else:
-                    ahour = np.array(today_record)
-                    # database.UPDATEprecise('RECORD', 'Proficiency', p, {'UID': [UID], 'Dates': [this_day]})
-                    db.session.query(Record).filter(
-                        Record.uid == UID, Record.dates == date.fromisoformat(this_day)).update({'proficiency': p})
-                ahour[now_day.hour] = ahour[now_day.hour] + 60
-                # database.UPDATEprecise('RECORD', 'Ahour', ahour.tolist(), {'UID': [UID], 'Dates': [this_day]})
-                db.session.query(Record).filter(Record.uid == UID, Record.dates == date.fromisoformat(this_day)).update(
-                    {'ahour': ahour.tolist()})
-                now_day = now_day + timedelta(hours=1)
-            this_day = start_day.strftime(DAY_FORMAT)
-            start_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
-            header = start_record[0]
-            ahour = start_record[1][header.index('ahour')]
-            ahour[start_day.hour] -= start_day.minute
-            database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
-            this_day = end_day.strftime(DAY_FORMAT)
-            end_record = database.SELECTfromWHERE('RECORD', {'Dates': [this_day], 'UID': [UID]})
-            ahour = end_record[1][header.index('ahour')]
-            ahour[end_day.hour] -= (60 - end_day.minute)
-            database.UPDATEprecise('RECORD', 'Ahour', ahour, {'UID': [UID], 'Dates': [this_day]})
+                    a_day = cont + 1
+                db.session.add(
+                    Record(uid=UID, dates=start_day, learned=learned, reviewed=reviewed, proficiency=p, aday=a_day))
+            else:
+                db.session.query(Record).filter(Record.dates == start_day, Record.uid == UID).update(
+                    {"learned": learned + start_record[0], "reviewed": reviewed + start_record[1], "proficiency": p})
+            db.session.commit()
+            if end_day != start_day:
+                cont = db.session.query(Record.aday).filter(Record.uid == UID, Record.dates == start_day).scalar()
+                if cont is None:
+                    a_day = 1
+                else:
+                    a_day = cont + 1
+                db.session.add(
+                    Record(uid=UID, dates=end_day, learned=learned, reviewed=reviewed, proficiency=p, aday=a_day))
+            db.session.commit()
+            # a_hour
+            now = start.replace(minute=0, second=0)
+            while now < end.replace(minute=0, second=0):
+                a_hour = db.session.query(Record.ahour).filter(Record.uid == UID, Record.dates == now.date()).scalar()
+                a_hour[now.hour] += 60
+                db.session.query(Record).filter(Record.uid == UID, Record.dates == now.date()).update({"ahour": a_hour})
+                now += timedelta(hours=1)
+            s_hour = db.session.query(Record.ahour).filter(Record.uid == UID, Record.dates == start_day).scalar()
+            s_hour[start.hour] -= start.minute
+            db.session.query(Record).filter(Record.uid == UID, Record.dates == start_day).update({"ahour": s_hour})
+            e_hour = db.session.query(Record.ahour).filter(Record.uid == UID, Record.dates == end_day).scalar()
+            e_hour[end.hour] += end.minute
+            db.session.query(Record).filter(Record.uid == UID, Record.dates == end_day).update({"ahour": e_hour})
+            db.session.commit()
             return OK()
     elif request.method == 'GET':
         init_record = Record.query.order_by(Record.dates.desc()).filter(
