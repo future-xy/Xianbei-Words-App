@@ -91,7 +91,7 @@ def signin():
         else:
             u = db.session.query(Users).filter(Users.mail == info).one_or_none()
         if u is None or u.pw != pw:
-            return ERROR("User doesn't exist or password error!")
+            return ERROR("User doesn't exist or password error! PW:{};UID:{}".format(u.pw, u.uid))
         else:
             login_user(u, remember=True)
             print("RETURN")
