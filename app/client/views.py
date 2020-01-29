@@ -27,7 +27,7 @@ from time import time
 def test():
     print("RUNNING!")
     # print(Users.query.get('0005'))
-    print(current_user.is_authoritcated)
+    # print(current_user.is_authoritcated)
     print(current_user)
     print(current_user.uid)
     return "HELLO WORLD"

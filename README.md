@@ -1,11 +1,12 @@
-# Database Final Project_server
-This a the server end of the XIANBEIDANCI App
+# 先背单词
 
-# API Command
+###### *This a the server end of the 先背单词 App*
 
-## Login page
+## Client-Server API
 
-### Sign up
+### Login page
+
+#### Sign up
 
 ##### Post("./signup")
 
@@ -23,7 +24,7 @@ return {
 }
 ```
 
-### Sign in
+#### Sign in
 
 ##### Post("./signin")
 
@@ -47,9 +48,9 @@ return {
 
 
 
-## Page 1
+### Page 1
 
-### Front Page
+#### Front Page
 
 ##### Get("./user/UID/overview")
 
@@ -67,7 +68,7 @@ return {
 }
 ```
 
-### Test Page
+#### Test Page
 
 #####   Get("./plan/UID/\<int\>")
 
@@ -123,9 +124,9 @@ return{
 } 
 ```
 
-## Page 2
+### Page 2
 
-### Information(visualization)
+#### Information(visualization)
 
 ##### Get(./record/UID)
 
@@ -144,9 +145,9 @@ return{
 	}
 }
 ```
-## Page 3
+### Page 3
 
-### record
+#### record
 
 ##### Get("./plan/UID")
 
@@ -179,9 +180,9 @@ return{
 ​	
 
 
-## Page4
+### Page4
 
-### user Info Full
+#### user Info Full
 
 ##### Get("./user/UID/info")
 
@@ -212,7 +213,7 @@ return{
 
 
 
-### Change Book List
+#### Change Book List
 
 ##### Get("./plan)
 
@@ -250,3 +251,9 @@ return{
 	"UId":""
 }
 ```
+
+
+
+## Mail API
+
+...
