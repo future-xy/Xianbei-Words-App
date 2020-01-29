@@ -33,6 +33,9 @@ class Config:
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
+    # SECRET KEY
+    SECRET_KEY = b'1234567890'
+
 
 class DevelopmentConfig(Config):
     def __init__(self):

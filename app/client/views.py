@@ -23,8 +23,13 @@ from time import time
 
 
 @client.route('/test')
+@login_required
 def test():
     print("RUNNING!")
+    # print(Users.query.get('0005'))
+    print(current_user.is_authoritcated)
+    print(current_user)
+    print(current_user.uid)
     return "HELLO WORLD"
 
 
@@ -35,8 +40,8 @@ def home():
     return render_template('index.html')
 
 
-# Debug
 # login page
+# Debug
 @client.route('/signup', methods=['POST'])
 def signup():
     current_app.logger.info('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
@@ -87,6 +92,7 @@ def signin():
         if u is None or u.pw != pw:
             return ERROR()
         else:
+            login_user(u, remember=True)
             return {'message': 0,
                     'data': {'Uname': u.uname, 'Pnumber': u.pnumber, 'Mail': u.mail, 'UID': u.uid}}
 

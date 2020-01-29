@@ -9,6 +9,7 @@
 from app import db, login_manager
 from app.util.utils import newID
 
+from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Text, Enum, TIMESTAMP, CHAR
 from sqlalchemy.dialects.postgresql import ARRAY
 
@@ -16,7 +17,7 @@ from datetime import datetime, date
 import numpy as np
 
 
-class Users(db.Model):
+class Users(UserMixin, db.Model):
     __tablename__ = 'users'
     uid = Column("uid", String(32), primary_key=True, nullable=False, unique=True, default=lambda: newID(prefix='U'))
     uname = Column("uname", String(64), nullable=False)
@@ -32,7 +33,15 @@ class Users(db.Model):
     def __repr__(self):
         return "<Users('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}')>".format(
             self.uid, self.uname, self.pw, self.avatar, self.mail, self.pnumber, self.sex, self.education, self.grade,
-            self.v)
+            self.vid)
+
+    def get_id(self):
+        return self.uid
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(user_id)
 
 
 class Dictionary(db.Model):
