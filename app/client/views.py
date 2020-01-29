@@ -69,6 +69,7 @@ def signup():
 @client.route('/signin', methods=['POST'])
 def signin():
     current_app.logger.info('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
+    print(request.json['data'])
     try:
         form = request.json['data']
         current_app.logger.debug('Post: {}'.format(form))
