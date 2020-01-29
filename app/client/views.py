@@ -150,7 +150,7 @@ def userInfo(UID):
             current_app.logger.error(error_message)
             return ERROR(error_message)
         else:
-            db.session.query(Users).filter(Users.uid == UID).update({k.lower(): v for k, v in form.item()})
+            db.session.query(Users).filter(Users.uid == UID).update({k.lower(): v for k, v in form.items()})
             db.commit()
             return OK()
     elif request.method == 'GET':
