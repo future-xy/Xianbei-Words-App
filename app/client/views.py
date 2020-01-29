@@ -374,7 +374,10 @@ def record(UID):
             a_hour = np.zeros(24).tolist()
             a_time = np.zeros(7).tolist()
         else:
-            record_7 = [init_record]
+            if init_record is None:
+                record_7 = [records[-1]]
+            else:
+                record_7 = [init_record]
             for d in range(-6, 1):
                 if records[-1].dates == date.today() + timedelta(d):
                     record_7.append(records.pop())
