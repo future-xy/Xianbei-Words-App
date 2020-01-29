@@ -155,7 +155,7 @@ def userInfo(UID):
             else:
                 form['Grade'] = int(form['Grade'])
             db.session.query(Users).filter(Users.uid == UID).update({k.lower(): v for k, v in form.items()})
-            db.commit()
+            db.session.commit()
             return OK()
     elif request.method == 'GET':
         user = db.session.query(Users).filter(Users.uid == UID).one_or_none()
