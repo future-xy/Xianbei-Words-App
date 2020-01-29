@@ -150,6 +150,10 @@ def userInfo(UID):
             current_app.logger.error(error_message)
             return ERROR(error_message)
         else:
+            if form['Grade'] == '':
+                form['Grade'] = 0
+            else:
+                form['Grade'] = int(form['Grade'])
             db.session.query(Users).filter(Users.uid == UID).update({k.lower(): v for k, v in form.items()})
             db.commit()
             return OK()
