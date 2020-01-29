@@ -4,11 +4,9 @@
 
 ## Client-Server API
 
-### Login page
+#### "./signup"
 
-#### Sign up
-
-##### Post("./signup")
+##### Post
 
 ```
 {
@@ -24,9 +22,11 @@ return {
 }
 ```
 
-#### Sign in
 
-##### Post("./signin")
+
+#### "./signin"
+
+##### Post
 
 ```
 {
@@ -48,11 +48,58 @@ return {
 
 
 
-### Page 1
+#### "./logout"
 
-#### Front Page
+##### Get
 
-##### Get("./user/UID/overview")
+```
+return {
+	"message":int	//[0:success,1:fail]
+	"data":""
+}
+```
+
+
+
+#### "./vocabulary"
+
+##### Get
+
+```
+{
+	"message":int
+	"data":[(
+		"VID"
+		"Vname"
+		"Count"
+		"Day"
+		"Type"
+	)]
+}
+```
+
+
+
+#### "./word/WID"
+
+##### GET
+
+```
+return{
+	"message":int		//success=0, fail=1
+	"data":{
+		"English":""
+		"Chinese":""
+		"Psymbol":""	//phonetic symbol
+	}
+}
+```
+
+
+
+#### "./user/overview"
+
+##### Get
 
 ```
 return {
@@ -68,9 +115,120 @@ return {
 }
 ```
 
-#### Test Page
 
-#####   Get("./plan/UID/\<int\>")
+
+#### "./user/info"
+
+##### Get
+
+```
+return{
+	"message":int			//success=0, fail=1
+	"data":{
+		"Uname":""
+		"Avatar":"base64"	//default=''
+        "Sex":""			//M/F/U
+        "Education":""		
+        "Grade":""
+	}
+}
+```
+
+##### Post
+
+```
+{
+	"Uname":""
+	"Avatar":"base64"	//default='0'
+	"Sex":""
+	"Education":""
+	"Grade":""
+}
+```
+
+
+
+#### "./user/record"
+
+#####   Post
+
+```
+{
+	"count_learned":int		//新背的单词数量
+	"count_reviewed":int	//复习的单词数量
+	//起止时间
+	"start":"2019-12-01-10-30-12"
+	"end":"2019-12-01-10-40-02"
+}
+
+return{
+	"message":int	//success=0, fail=1
+	"data":{}
+} 
+```
+
+##### Get
+
+```
+return{
+	"message":int				//success=0, fail=1
+	"data":{
+		"proficiencyInfo":[
+			(int,int,int,int), 	//counts of p=0,1,2,3
+			...					//past 7 days
+			(int,int,int,int)
+			],
+		"Forgetting curve":[], 	//长度为7的实数数组，无物理意义 
+		"active time":[minute],	//(int)，过去7天每天在线(背单词)时长
+        	"Ahour":[],			//长度为24的整数数组，表示过去7天每个小时的平均活跃度,从0时刻开始					
+	}
+}
+```
+
+
+
+#### "./user/plan"
+
+##### Get
+
+```
+return{
+	"message":int	//success=0, fail=1
+	"data":[(
+		"TID",
+		"WID",
+		"English",
+		"Chinese",
+		"Proficiency"
+	)]
+}
+```
+
+##### Post
+
+```
+{
+	"result":[(
+		"TID",
+		"WID",
+		"Proficiency"
+	)]
+}
+```
+
+##### Put
+
+```
+{
+	"Vname"		//or VID 建议VID
+} // 然后更新个人信息
+```
+
+
+
+#### "./user/plan/\<int\>"
+
+#####   Get
 
 ```
 return{
@@ -92,163 +250,16 @@ return{
 }
 ```
 
-##### GET("./word/WID")
-
-```
-return{
-	"message":int		//success=0, fail=1
-	"data":{
-		"English":""
-		"Chinese":""
-		"Psymbol":""	//phonetic symbol
-	}
-}
-```
 
 
+#### "./user/feedback"
 
-#####   Post("./record/UID")
-
-```
-{
-	"count_learned":int		//新背的单词数量
-	"count_reviewed":int	//复习的单词数量
-	//起止时间
-	"start":"2019-12-01-10-30-12"
-	"end":"2019-12-01-10-40-02"
-}
-
-return{
-	"message":int	//success=0, fail=1
-	"data":{}
-} 
-```
-
-### Page 2
-
-#### Information(visualization)
-
-##### Get(./record/UID)
-
-```
-return{
-	"message":int				//success=0, fail=1
-	"data":{
-		"proficiencyInfo":[
-			(int,int,int,int), 	//counts of p=0,1,2,3
-			...					//past 7 days
-			(int,int,int,int)
-			],
-		"Forgetting curve":[], 					//长度为7的实数数组，无物理意义 
-		"active time":[minute],		//(int)，过去7天每天在线(背单词)时长
-        	"Ahour":[],			//长度为24的整数数组，表示过去7天每个小时的平均活跃度,从0时刻开始					
-	}
-}
-```
-### Page 3
-
-#### record
-
-##### Get("./plan/UID")
-
-```
-return{
-	"message":int	//success=0, fail=1
-	"data":[(
-		"TID",
-		"WID",
-		"English",
-		"Chinese",
-		"Proficiency"
-	)]
-}
-```
-
-##### Post("./plan/UID")
-
-```
-{
-	"result":[(
-		"TID",
-		"WID",
-		"Proficiency"
-	)]
-}
-```
-
-
-​	
-
-
-### Page4
-
-#### user Info Full
-
-##### Get("./user/UID/info")
-
-```
-return{
-	"message":int			//success=0, fail=1
-	"data":{
-		"Uname":""
-		"Avatar":"base64"	//default=''
-        "Sex":""			//M/F/U
-        "Education":""		
-        "Grade":""
-	}
-}
-```
-
-##### Post("./user/UID/info")
-
-```
-{
-	"Uname":""
-	"Avatar":"base64"	//default='0'
-	"Sex":""
-	"Education":""
-	"Grade":""
-}
-```
-
-
-
-#### Change Book List
-
-##### Get("./plan)
-
-```
-{
-	"message":int
-	"data":[(
-		"VID"
-		"Vname"
-		"Count"
-		"Day"
-		"Type"
-	)]
-}
-```
-
-
-
-##### Post("./user/UID/plan")
-
-```
-{
-	"Vname"		//or VID 建议VID
-} // 然后更新个人信息
-```
-
-### Feedback Page
-
-##### Post("./feedback")
+##### Post
 
 
 ```
 {
 	"Info":""
-	"UId":""
 }
 ```
 
