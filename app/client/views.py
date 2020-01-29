@@ -102,6 +102,7 @@ def signin():
 # NOT Debug
 # front page
 @client.route('/user/<UID>/overview', methods=['GET'])
+@login_required
 def hello(UID):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     # if the user has chosen any vocabulary
@@ -148,6 +149,7 @@ def hello(UID):
 
 # NOT Debug
 @client.route('/user/<UID>/info', methods=['GET', 'POST'])
+@login_required
 def userInfo(UID):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'POST':
@@ -179,6 +181,7 @@ def userInfo(UID):
 
 # NOT Debug
 @client.route('/plan', methods=['GET'])
+@login_required
 def plan():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     vs = db.session.query(Vocabulary).all()
@@ -191,6 +194,7 @@ def plan():
 
 # Debug
 @client.route('/user/<UID>/plan', methods=['POST'])
+@login_required
 def updateUserPlan(UID):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     try:
@@ -217,6 +221,7 @@ def updateUserPlan(UID):
 # Debug
 # test page
 @client.route('/plan/<UID>/<int:seed>', methods=['GET'])
+@login_required
 def getTest(UID, seed):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     #
@@ -275,6 +280,7 @@ def getTest(UID, seed):
 
 # Debug
 @client.route('/plan/<UID>', methods=['GET', 'POST'])
+@login_required
 def updatePlan(UID):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'GET':
@@ -303,6 +309,7 @@ def updatePlan(UID):
 
 # Debug
 @client.route('/word/<WID>', methods=['GET'])
+@login_required
 def getWord(WID):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     w = db.session.query(Dictionary).filter(Dictionary.wid == WID).one()
@@ -311,6 +318,7 @@ def getWord(WID):
 
 # Debug
 @client.route('/record/<UID>', methods=['POST', 'GET'])
+@login_required
 def record(UID):
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     if request.method == 'POST':
@@ -410,6 +418,7 @@ def record(UID):
 
 # Debug
 @client.route('/feedback', methods=['POST'])
+@login_required
 def feedback():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     try:
