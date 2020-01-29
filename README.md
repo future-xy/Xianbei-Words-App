@@ -1,6 +1,31 @@
 # 先背单词
 
-###### *This a the server end of the 先背单词 App*
+###### *This the server end of the 先背单词 App*
+
+We updated the C-S API.
+
+Some message formats also changed
+
+| Old                        | New                   | Method |
+| -------------------------- | --------------------- | ------ |
+| Post("./signup")           | "./signup"            | post   |
+| Post("./signin")           | "./signin"            | post   |
+|                            | "./logout"            | get    |
+| Get("./plan)               | "./vocabulary"        | get    |
+| Get("./word/WID")          | "./word/WID"          | get    |
+| Get("./user/UID/overview") | "./user/overview"     | get    |
+| Get("./user/UID/info")     | "./user/info"         | get    |
+| Post("./user/UID/info")    |                       | post   |
+| Post("./record/UID")       | "./user/record"       | post   |
+| Get(./record/UID)          |                       | get    |
+| Get("./plan/UID")          | "./user/plan"         | get    |
+| Post("./plan/UID")         |                       | post   |
+| Post("./user/UID/plan")    |                       | put    |
+| Get("./plan/UID/\<int\>")  | "./user/plan/\<int\>" | get    |
+| Post("./feedback")         | "./user/feedback"     | post   |
+|                            |                       |        |
+
+
 
 ## Client-Server API
 
