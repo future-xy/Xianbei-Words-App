@@ -95,7 +95,6 @@ def signin():
         current_app.logger.error(error_message)
         return ERROR(error_message)
     else:
-        print("R U OK?")
         # uid
         if tp == 0:
             u = db.session.query(Users).filter(Users.uid == info).one_or_none()
