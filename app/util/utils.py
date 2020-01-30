@@ -7,6 +7,7 @@
 
 from config import ID_SPACE, TIME_FORMAT, DAY_FORMAT, ID_LEN
 import random
+from numpy.random import sample
 import time
 import datetime
 

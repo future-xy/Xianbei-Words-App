@@ -317,6 +317,7 @@ def getTest(seed):
         options = [op[1] for op in ops]
         random.shuffle(options)
         today_review.append(item + (options,))
+    random.seed(time())
     return {"message": 0, "data": {
         "todayLearn": today_learn,
         "todayReview": today_review
