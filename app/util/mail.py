@@ -9,12 +9,11 @@ from smtplib import *
 def sendMail(recv_addr, mail_content):
     server = 'smtp.sina.com'  # SMTP服务器
     send_addr = 'database_app@sina.com'  # 发送地址
-    sender = '先背单词App  '  # 发件人
+    #sender = '先背单词App  '  # 发件人
     pwd = 'ac3e268ebb74985e'  # SMTP授权码
 
     # mail_title = '注册'
     smtp = SMTP_SSL(server)
-    smtp.set_debuglevel(0)  # 1为调试模式开启
     smtp.ehlo(server)
     smtp.login(send_addr, pwd)
 
