@@ -44,7 +44,7 @@ def send_mail():
     Best regards,
     先背单词
     """
-    sendMail('2723280065@qq.com', mail_template.format(current_user.uid))
+    return sendMail('2723280065@qq.com', mail_template.format(current_user.uid))
 
 
 # home page
