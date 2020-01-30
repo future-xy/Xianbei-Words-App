@@ -8,7 +8,6 @@
 from app import db
 from . import client
 from app.util.utils import OK, ERROR
-from app.util.mail import sendMail
 from config import REVIEW, LEARN, DAY_FORMAT, TIME_FORMAT
 from models import Users, Vocabulary, Dictionary, Feedback, Plan, Record, Takes
 
@@ -46,9 +45,7 @@ def send_mail(Receiver):
     Best regards,
     先背单词
     """
-    print(Receiver)
-    sendMail(Receiver, mail_template.format(current_user.uid), '修改密码', current_app.config['MAIL_SERVER'],
-             current_app.config['MAIL_ADDRESS'], current_app.config['MAIL_PWD'])
+    current_app.config['MAIL'].send(Receiver, mail_template.format(current_user.uid), '邮箱注册')
     return {}
 
 

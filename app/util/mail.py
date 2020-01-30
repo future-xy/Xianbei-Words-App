@@ -6,25 +6,32 @@ from email.header import Header
 from smtplib import *
 
 
-def sendMail(recv_addr, mail_content, mail_title, server, send_addr, pwd):
-    h = Header('先背单词App', 'utf-8')
-    h.append('<{}>'.format(send_addr), 'ascii')
+class Mail:
+    def __init__(self, server, send_addr, pwd, header):
+        self.server = server
+        self.send_addr = send_addr
+        self.pwd = pwd
+        self.header = header
 
-    msg = MIMEText(mail_content, "plain", 'utf-8')  # 邮件内容
+    def send(self, recv_addr, content, title):
+        h = Header(self.header, 'utf-8')
+        h.append('<{}>'.format(self.send_addr), 'ascii')
 
-    # 邮件头部
-    msg['Subject'] = Header(mail_title, 'utf-8')  # 邮件主题
-    msg['From'] = h  # 发件人
-    msg['To'] = Header(recv_addr, 'utf-8')  # 收件人
+        msg = MIMEText(content, "plain", 'utf-8')  # 邮件内容
 
-    smtp = SMTP_SSL(server)
-    smtp.ehlo(server)
-    smtp.login(send_addr, pwd)
+        # 邮件头部
+        msg['Subject'] = Header(title, 'utf-8')  # 邮件主题
+        msg['From'] = h  # 发件人
+        msg['To'] = Header(recv_addr, 'utf-8')  # 收件人
 
-    try:
-        smtp.sendmail(send_addr, recv_addr, msg.as_string())
-        smtp.quit()
-        return 0
-    except SMTPException:
-        smtp.quit()
-        return 1
+        smtp = SMTP_SSL(self.server)
+        smtp.ehlo(self.server)
+        smtp.login(self.send_addr, self.pwd)
+
+        try:
+            smtp.sendmail(self.send_addr, recv_addr, msg.as_string())
+            smtp.quit()
+            return 0
+        except SMTPException:
+            smtp.quit()
+            return 1

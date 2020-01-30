@@ -9,6 +9,8 @@ import string
 import os
 from pathlib import Path
 
+from app.util.mail import Mail
+
 WEB_PATH = 'html'
 LOG_PATH = './logs/'
 
@@ -42,6 +44,8 @@ class Config:
     MAIL_ADDRESS = os.getenv('MAIL_ADDRESS')
     MAIL_PWD = os.getenv('MAIL_PWD')
     MAIL_SERVER = os.getenv('MAIL_SERVER')
+
+    MAIL = Mail(MAIL_SERVER, MAIL_ADDRESS, MAIL_PWD, APP_NAME)
 
 
 class DevelopmentConfig(Config):
