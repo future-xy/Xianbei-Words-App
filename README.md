@@ -251,7 +251,7 @@ return{
 
 
 
-#### "./user/plan/\<int\>"
+#### "./user/plan/list"
 
 #####   Get
 
@@ -301,3 +301,5 @@ return{
 return {
     "message":int	//([0:success,1:error]
 }
+
+```

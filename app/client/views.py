@@ -265,9 +265,9 @@ def updateUserPlan():
 
 # Debug
 # test page
-@client.route('/user/plan/<int:seed>', methods=['GET'])
+@client.route('/user/plan/list', methods=['GET'])
 @login_required
-def getTest(seed):
+def getTest():
     current_app.logger.debug('From {} User agent: {}'.format(request.remote_addr, request.user_agent))
     UID = current_user.uid
     vid = current_user.vid
@@ -275,7 +275,7 @@ def getTest(seed):
         error_message = "The user({}) didn't choose any vocabulary".format(UID)
         current_app.logger.error(error_message)
         return ERROR(error_message)
-    random.seed(seed)
+    # random.seed(seed)
     review, learn = REVIEW, LEARN
     have_learned = db.session.query(Plan.tid, Takes.wid, Plan.proficiency).filter(Plan.tid == Takes.tid,
                                                                                   Plan.uid == UID,
@@ -317,7 +317,7 @@ def getTest(seed):
         options = [op[1] for op in ops]
         random.shuffle(options)
         today_review.append(item + (options,))
-    random.seed(time())
+    # random.seed(time())
     return {"message": 0, "data": {
         "todayLearn": today_learn,
         "todayReview": today_review
