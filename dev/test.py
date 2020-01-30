@@ -17,4 +17,4 @@ data4 = {
     'data': {'count_learned': 10, 'count_reviewed': 3, 'start': '2020-01-28-22-14-39', 'end': '2020-01-29-00-23-12'}}
 
 r = post(l_url + 'signin', json=data)
-r2 = get(l_url + 'test/mail/1023198294@qq.com', cookies=r.cookies)
+r2 = get(l_url + 'test/mail/fy38607203@163.com', cookies=r.cookies)

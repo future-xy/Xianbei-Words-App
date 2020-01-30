@@ -24,7 +24,9 @@ TIME_FORMAT = "%Y-%m-%d-%H-%M-%S"
 
 
 class Config:
-    #
+    # APP
+    APP_NAME = os.getenv('APP_NAME')
+
     # Basic path
     BASE_DIR = Path(os.path.abspath('.'))
     # WEB_ROOT = BASE_DIR / ''
@@ -37,8 +39,9 @@ class Config:
     SECRET_KEY = b'1234567890'
 
     # Mail settings
-    MAIL_ADDRESS = 'database_app@sina.com'
-
+    MAIL_ADDRESS = os.getenv('MAIL_ADDRESS')
+    MAIL_PWD = os.getenv('MAIL_PWD')
+    MAIL_SERVER = os.getenv('MAIL_SERVER')
 
 
 class DevelopmentConfig(Config):

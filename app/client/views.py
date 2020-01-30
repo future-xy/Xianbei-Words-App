@@ -24,9 +24,11 @@ from time import time
 
 
 @client.route('/test')
-@login_required
+# @login_required
 def test():
     print("RUNNING!")
+    # print(current_app.config.MAIL_ADDRESS)
+    print(current_app.config['MAIL_ADDRESS'])
     # print(Users.query.get('0005'))
     # print(current_user.is_authoritcated)
     # print(current_user)
@@ -45,7 +47,8 @@ def send_mail(Receiver):
     先背单词
     """
     print(Receiver)
-    sendMail(Receiver, mail_template.format(current_user.uid), '修改密码')
+    sendMail(Receiver, mail_template.format(current_user.uid), '修改密码', current_app.config['MAIL_SERVER'],
+             current_app.config['MAIL_ADDRESS'], current_app.config['MAIL_PWD'])
     return {}
 
 
