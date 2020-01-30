@@ -28,5 +28,4 @@ def sendMail(recv_addr, mail_content):
         return 0
     except SMTPException:
         return 1
-
     smtp.quit()

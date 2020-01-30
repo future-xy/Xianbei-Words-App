@@ -291,10 +291,10 @@ return{
 
 
 ## Mail API
-
+```
 {
-	"recv_addr":""		//Receiver mail address
-	"mail_content":""	//email
+    "recv_addr":""		//Receiver mail address
+    "mail_content":""	//email
 }
 
 return {
