@@ -293,8 +293,9 @@ return{
 ## Mail API
 ```
 {
-    "recv_addr":""		//Receiver mail address
-    "mail_content":""	//email
+    "recv_addr":""      //Receiver mail address
+    "mail_content":""	//email content
+    "mail_title":""     //email title
 }
 
 return {
