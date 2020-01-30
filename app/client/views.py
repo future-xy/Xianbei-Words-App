@@ -8,6 +8,7 @@
 from app import db
 from . import client
 from app.util.utils import OK, ERROR
+from app.util.mail import sendMail
 from config import REVIEW, LEARN, DAY_FORMAT, TIME_FORMAT
 from models import Users, Vocabulary, Dictionary, Feedback, Plan, Record, Takes
 
@@ -28,9 +29,22 @@ def test():
     print("RUNNING!")
     # print(Users.query.get('0005'))
     # print(current_user.is_authoritcated)
-    print(current_user)
-    print(current_user.uid)
+    # print(current_user)
+    # print(current_user.uid)
     return "HELLO WORLD"
+
+
+@client.route('/test/mail')
+@login_required
+def send_mail():
+    mail_template = """
+    Dear User {},
+    This is a test mail!
+    
+    Best regards,
+    先背单词
+    """
+    return sendMail('2723280065@qq.com', mail_template.format(current_user.uid))
 
 
 # home page
@@ -80,6 +94,7 @@ def signin():
         current_app.logger.error(error_message)
         return ERROR(error_message)
     else:
+        print("R U OK?")
         # uid
         if tp == 0:
             u = db.session.query(Users).filter(Users.uid == info).one_or_none()
