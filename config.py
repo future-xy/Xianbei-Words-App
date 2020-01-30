@@ -36,6 +36,9 @@ class Config:
     # SECRET KEY
     SECRET_KEY = b'1234567890'
 
+    # Mail settings
+    # MAIL_ADRESS
+
 
 class DevelopmentConfig(Config):
     def __init__(self):

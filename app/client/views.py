@@ -34,9 +34,9 @@ def test():
     return "HELLO WORLD"
 
 
-@client.route('/test/mail')
+@client.route('/test/mail/<Receiver>')
 @login_required
-def send_mail():
+def send_mail(Receiver):
     mail_template = """
     Dear User {},
     This is a test mail!
@@ -44,7 +44,8 @@ def send_mail():
     Best regards,
     先背单词
     """
-    sendMail('2723280065@qq.com', mail_template.format(current_user.uid))
+    print(Receiver)
+    sendMail(Receiver, mail_template.format(current_user.uid), '修改密码')
     return {}
 
 
@@ -349,6 +350,7 @@ def record():
             current_app.logger.error(error_message)
             return ERROR(error_message)
         else:
+            print(form)
             start = datetime.strptime(start, TIME_FORMAT)
             end = datetime.strptime(end, TIME_FORMAT)
             start_day = start.date()
