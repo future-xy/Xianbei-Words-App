@@ -277,6 +277,7 @@ def getTest():
         return ERROR(error_message)
     # random.seed(seed)
     review, learn = REVIEW, LEARN
+    start = time()
     have_learned = db.session.query(Plan.tid, Takes.wid, Plan.proficiency).filter(Plan.tid == Takes.tid,
                                                                                   Plan.uid == UID,
                                                                                   Plan.proficiency != 0).all()
@@ -318,6 +319,7 @@ def getTest():
         random.shuffle(options)
         today_review.append(item + (options,))
     # random.seed(time())
+    print(time() - start)
     return {"message": 0, "data": {
         "todayLearn": today_learn,
         "todayReview": today_review

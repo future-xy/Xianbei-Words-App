@@ -37,7 +37,8 @@ class Config:
     SECRET_KEY = b'1234567890'
 
     # Mail settings
-    # MAIL_ADRESS
+    MAIL_ADDRESS = 'database_app@sina.com'
+
 
 
 class DevelopmentConfig(Config):
