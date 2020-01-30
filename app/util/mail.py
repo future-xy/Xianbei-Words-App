@@ -12,7 +12,7 @@ def sendMail(recv_addr, mail_content):
     #sender = '先背单词App  '  # 发件人
     pwd = 'ac3e268ebb74985e'  # SMTP授权码
 
-    # mail_title = '注册'
+    #mail_title = '注册'
     smtp = SMTP_SSL(server)
     smtp.ehlo(server)
     smtp.login(send_addr, pwd)
